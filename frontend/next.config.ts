@@ -7,6 +7,8 @@ const output =
 
 const nextConfig: NextConfig = {
   output,
+  // Hide the "N" dev badge in the corner of `next dev`. Errors still show.
+  devIndicators: false,
   // The export target has no server to optimize images on the fly.
   ...(output === "export" ? { images: { unoptimized: true } } : {}),
 };
