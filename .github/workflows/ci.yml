@@ -1,0 +1,147 @@
+name: CI/CD
+
+# Every push and pull request is linted and tested. Only a push to main that
+# passes both goes on to deploy: the backend first (its URL is compiled into the
+# frontend), then the frontend. AWS is reached through OIDC - no stored keys.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # One deploy at a time, and never cancel one halfway through a stack update.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (ruff + pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: spry
+          POSTGRES_PASSWORD: spry
+          POSTGRES_DB: spry
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U spry"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: ruff check
+        run: uv run ruff check --output-format=github .
+
+      - name: ruff format --check
+        run: uv run ruff format --check --diff .
+
+      - name: pytest
+        run: uv run pytest -q
+
+  frontend:
+    name: Frontend (eslint + prettier + tsc + vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm test
+      # next build generates the route types tsc needs, so build first.
+      - run: pnpm build
+      - run: pnpm exec tsc --noEmit
+
+  infra:
+    name: Infrastructure (cfn-lint + shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install cfn-lint
+      - run: cfn-lint infra/*.yaml
+      - run: shellcheck -x -P SCRIPTDIR --severity=warning scripts/deploy-backend.sh scripts/destroy-backend.sh scripts/domain-backend.sh scripts/lib/common.sh backend/scripts/entrypoint.sh
+
+  deploy:
+    name: Deploy to AWS
+    needs: [backend, frontend, infra]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write # lets the job ask GitHub for the OIDC token
+      contents: read
+    env:
+      CI: "true"
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+      API_DOMAIN: ${{ vars.API_DOMAIN }}
+      APP_DOMAIN: ${{ vars.APP_DOMAIN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy backend (image tagged with the commit SHA)
+        run: make deploy-backend
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Deploy frontend
+        run: |
+          # No .env on CI: hand the freshly deployed API URL straight across.
+          export BACKEND_URL="$(aws cloudformation describe-stacks \
+            --stack-name "${PROJECT_NAME}-backend" \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)"
+          make deploy-frontend
+
+      # The very first run has no frontend yet when the backend deploys, so the
+      # API did not know which origin to allow. Idempotent: a no-op afterwards.
+      - name: Refresh API CORS for the frontend origin
+        run: make deploy-backend
