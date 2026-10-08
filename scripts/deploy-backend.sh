@@ -86,8 +86,10 @@ fi
 
 # --- domain and certificate -------------------------------------------------
 
-# Both are looked up, not stored: if a certificate for API_DOMAIN has been
-# issued in this region (make cert-backend), HTTPS is switched on.
+# API_DOMAIN is optional. Without one, the stack puts a CloudFront distribution
+# in front of the load balancer and the API is served over HTTPS from a
+# *.cloudfront.net address. With one, a certificate issued in this region
+# (make cert-backend) switches HTTPS on at the load balancer itself.
 API_DOMAIN="${API_DOMAIN:-}"
 API_DOMAIN="${API_DOMAIN%.}"
 CERT_ARN=""
@@ -98,8 +100,8 @@ if [[ -n "${API_DOMAIN}" ]]; then
     --output text 2>/dev/null || true)"
   [[ "${CERT_ARN}" == "None" ]] && CERT_ARN=""
   if [[ -z "${CERT_ARN}" ]]; then
-    warn "no issued certificate for ${API_DOMAIN} in ${AWS_REGION} - deploying over HTTP only."
-    warn "run: make cert-backend   then deploy again to switch HTTPS on"
+    warn "no issued certificate for ${API_DOMAIN} in ${AWS_REGION} - falling back to the CloudFront address."
+    warn "run: make cert-backend   then deploy again to use ${API_DOMAIN}"
   fi
   read -r ZONE_ID _ <<<"$(find_hosted_zone "${API_DOMAIN}")" || true
   [[ -n "${ZONE_ID}" ]] && log "DNS for ${API_DOMAIN} will be managed in Route 53 zone ${ZONE_ID}"
@@ -116,14 +118,14 @@ if [[ -z "${CORS}" ]]; then
   [[ -n "${site}" && "${site}" != "None" ]] && origins+=("${site%/}")
   CORS="$(IFS=,; echo "${origins[*]:-}")"
 fi
-[[ -n "${CORS}" ]] || warn "CORS_ORIGINS is empty - browsers will be refused until APP_DOMAIN is set"
+[[ -n "${CORS}" ]] || warn "CORS_ORIGINS is empty (no frontend yet) - run make deploy-backend again after make deploy-frontend"
 
 # --- roll it out ------------------------------------------------------------
 
 if aws cloudformation describe-stacks --stack-name "${STACK_NAME}" >/dev/null 2>&1; then
   log "updating ${STACK_NAME} to ${IMAGE_TAG}"
 else
-  log "first deploy - creating ${STACK_NAME} (the database takes about ten minutes)"
+  log "first deploy - creating ${STACK_NAME} (database and CloudFront take about ten to fifteen minutes)"
 fi
 
 # CloudFormation waits for the ECS service to settle. If the new container never
@@ -173,7 +175,7 @@ echo
 echo "  api        ${API_URL}"
 echo "  image      ${IMAGE_URI}"
 echo "  logs       make logs-backend"
-if [[ -n "${API_DOMAIN}" && -z "${ZONE_ID}" ]]; then
+if [[ -n "${CERT_ARN}" && -z "${ZONE_ID}" ]]; then
   echo
   echo "  DNS is not in Route 53 here. Add this record where ${API_DOMAIN} is hosted:"
   echo

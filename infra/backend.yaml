@@ -65,6 +65,9 @@ Parameters:
 
 Conditions:
   HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
+  # No domain: the API is fronted by CloudFront, which gives it HTTPS on a
+  # *.cloudfront.net name with no certificate to request.
+  NoCertificate: !Equals [!Ref CertificateArn, ""]
   HasZone: !And
     - !Not [!Equals [!Ref HostedZoneId, ""]]
     - !Not [!Equals [!Ref DomainName, ""]]
@@ -386,13 +389,47 @@ Resources:
         HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
         EvaluateTargetHealth: true
 
+  # Used only when there is no custom domain. Browsers refuse an HTTPS page
+  # calling an HTTP API, and a load balancer cannot hold a certificate for its
+  # own amazonaws.com name - so CloudFront terminates TLS and passes everything
+  # through to the ALB. Nothing is cached; every method, header (Origin, for
+  # CORS) and query string reaches the API untouched.
+  ApiDistribution:
+    Type: AWS::CloudFront::Distribution
+    Condition: NoCertificate
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub "${ProjectName} API (HTTPS in front of the ALB)"
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        Origins:
+          - Id: alb
+            DomainName: !GetAtt LoadBalancer.DNSName
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+              HTTPPort: 80
+              OriginReadTimeout: 60
+        DefaultCacheBehavior:
+          TargetOriginId: alb
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+          Compress: true
+          # Managed: CachingDisabled
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          # Managed: AllViewerExceptHostHeader
+          OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+      Tags:
+        - Key: PROJECT_NAME
+          Value: !Ref ProjectName
+
 Outputs:
   ApiUrl:
     Description: Where the frontend should send its requests.
     Value: !If
       - HasCertificate
       - !Sub "https://${DomainName}"
-      - !Sub "http://${LoadBalancer.DNSName}"
+      - !Sub "https://${ApiDistribution.DomainName}"
 
   LoadBalancerDnsName:
     Description: Point a CNAME for the API hostname here if DNS is not in Route 53.

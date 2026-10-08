@@ -45,6 +45,10 @@ Backend: ECR image (tagged with the commit SHA) → ECS Fargate behind an ALB wi
 PostgreSQL, password in Secrets Manager. Frontend: static export in private S3 behind CloudFront.
 Migrations run when the container starts.
 
+No domain? Skip `API_DOMAIN`/`APP_DOMAIN`, `make cert-backend` and the `make cert`/`make domain` step. The API and
+the site then both get HTTPS `*.cloudfront.net` addresses (the API through a CloudFront distribution in front of the load
+balancer, so nothing needs a certificate).
+
 One-time setup (your own AWS account, MFA on the root user, an IAM user, `aws configure` or SSO):
 
 ```bash
