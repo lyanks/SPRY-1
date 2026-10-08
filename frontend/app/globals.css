@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans:
+    var(--font-spry), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-heading:
+    var(--font-spry), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Spry palette */
+  --color-lavender: var(--lavender);
+  --color-lilac: var(--lilac);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-lime: var(--lime);
+  --color-lime-deep: var(--lime-deep);
+  --color-ink: var(--ink);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* page and surfaces */
+  --lavender: #e6e0f8; /* page background */
+  --lilac: #f5f2ff; /* soft card surface */
+  --violet: #4b3a8c; /* rail, today column, primary actions */
+  --violet-soft: #7b6bc8; /* secondary violet, meeting blocks */
+  --lime: #c4f063; /* the accent: focus blocks, key highlights */
+  --lime-deep: #5f8a12; /* lime text on light surfaces (4.9:1 on white) */
+  --ink: #241b4b;
+
+  --background: var(--lavender);
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--violet);
+  --primary-foreground: #ffffff;
+  --secondary: var(--lilac);
+  --secondary-foreground: var(--ink);
+  --muted: var(--lilac);
+  --muted-foreground: #6a5f93;
+  --accent: #ebe6fb;
+  --accent-foreground: var(--ink);
+  --destructive: #c0392b;
+  --border: #d9d1f2;
+  --input: #cfc6ee;
+  --ring: var(--violet-soft);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image:
+      radial-gradient(60rem 40rem at 0% -10%, #f3efff 0%, transparent 60%),
+      radial-gradient(50rem 36rem at 100% 110%, #d8cff5 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
