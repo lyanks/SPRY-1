@@ -33,7 +33,7 @@ done
 
 PROJECT_NAME="${PROJECT_NAME:-spry}"
 STACK_NAME="${FRONTEND_STACK_NAME:-${PROJECT_NAME}-frontend}"
-AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
+AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-eu-central-1}}"
 export AWS_DEFAULT_REGION="${AWS_REGION}"
 
 # --- preflight --------------------------------------------------------------
@@ -64,7 +64,7 @@ API_URL="${API_URL%/}"
 log "building against ${API_URL}"
 
 
-# The function URL is always HTTPS; plain HTTP here means a hand-edited .env.
+# A plain-HTTP BACKEND_URL means the API has no certificate yet.
 [[ "${API_URL}" == https://* ]] \
   || die "BACKEND_URL must be https:// - browsers block an HTTPS page calling HTTP"
 
@@ -148,7 +148,6 @@ echo "  api        ${API_URL}"
 echo "  bucket     s3://${BUCKET}"
 echo
 
-echo "Now allow the site's origin through CORS:"
-echo
-echo "  API_CORS_ORIGINS=${SITE_URL}   in .env, then: make deploy-backend"
+echo "The API allows this origin automatically when APP_DOMAIN is set in .env"
+echo "(or once this stack exists): run make deploy-backend to refresh CORS."
 echo

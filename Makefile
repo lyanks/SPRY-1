@@ -51,18 +51,21 @@ shell-backend: ## Shell into the backend container
 shell-db: ## psql into the database
 	$(COMPOSE) exec db psql -U $${POSTGRES_USER:-spry} -d $${POSTGRES_DB:-spry}
 
-deploy-backend: ## Build + push the image, roll the Lambda (function URL + Aurora), migrate, write BACKEND_URL to .env
+deploy-backend: ## Build + push the image (tagged with the commit SHA), roll the ECS service; IMAGE_TAG=<sha> redeploys an old image
 	./scripts/deploy-backend.sh
 
-destroy-backend: ## Delete the backend stack, Aurora cluster included
+rollback-backend: ## Redeploy an earlier image: make rollback-backend IMAGE_TAG=<sha>
+	@test -n "$(IMAGE_TAG)" || { echo "usage: make rollback-backend IMAGE_TAG=<sha>"; exit 2; }
+	IMAGE_TAG=$(IMAGE_TAG) ./scripts/deploy-backend.sh
+
+destroy-backend: ## Delete the backend stack, database included
 	./scripts/destroy-backend.sh
 
 logs-backend: ## Tail the deployed backend's CloudWatch logs
-	aws logs tail /aws/lambda/$${PROJECT_NAME:-spry}-backend --follow --since 10m
+	aws logs tail /ecs/$${PROJECT_NAME:-spry}-backend --follow --since 10m
 
-migrate-backend: ## Re-run migrations on the deployed backend (deploy-backend already does)
-	aws lambda invoke --function-name $${PROJECT_NAME:-spry}-backend \
-		--cli-binary-format raw-in-base64-out --payload '{"action":"migrate"}' /dev/stdout
+cert-backend: ## Request + DNS-validate the API's certificate: make cert-backend API_DOMAIN=api.example.com
+	./scripts/domain-backend.sh
 
 cert: ## Request + DNS-validate a us-east-1 certificate for the frontend: make cert DOMAIN=app.example.com
 	./scripts/domain-frontend.sh cert

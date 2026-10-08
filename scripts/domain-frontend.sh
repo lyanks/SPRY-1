@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Put a custom domain, with HTTPS, on the deployed frontend's CloudFront
-# distribution. Only the frontend gets a custom domain - the API stays on its
-# Lambda function URL - and it is assigned here, separately from
+# distribution. Only the frontend gets a custom domain - the API has its own
+# domain via make cert-backend - and it is assigned here, separately from
 # `make deploy-frontend`, which never touches the domain settings.
 #
 #   scripts/domain-frontend.sh cert     request + DNS-validate an ACM certificate
@@ -44,7 +44,7 @@ done
 
 PROJECT_NAME="${PROJECT_NAME:-spry}"
 STACK_NAME="${FRONTEND_STACK_NAME:-${PROJECT_NAME}-frontend}"
-AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
+AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-eu-central-1}}"
 export AWS_DEFAULT_REGION="${AWS_REGION}"
 # CloudFront only takes certificates from us-east-1, whatever the stack region.
 ACM_REGION=us-east-1
@@ -261,6 +261,4 @@ fi
 
 echo "  https://${DOMAIN} - the cloudfront.net name keeps working too"
 echo
-echo "Let the API accept the new origin:"
-echo
-echo "  API_CORS_ORIGINS=https://${DOMAIN}   in .env, then: make deploy-backend"
+echo "Let the API accept the new origin: set APP_DOMAIN=${DOMAIN} in .env, then make deploy-backend"

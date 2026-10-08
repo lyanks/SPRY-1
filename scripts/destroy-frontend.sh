@@ -25,7 +25,7 @@ done
 
 PROJECT_NAME="${PROJECT_NAME:-spry}"
 STACK_NAME="${FRONTEND_STACK_NAME:-${PROJECT_NAME}-frontend}"
-AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
+AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-eu-central-1}}"
 export AWS_DEFAULT_REGION="${AWS_REGION}"
 
 command -v aws >/dev/null 2>&1 || die "aws cli is required"

@@ -41,6 +41,25 @@ recreates its schema there, so never point it at data you care about.
 
 ## Deploy to AWS
 
-`make deploy-backend`, `make deploy-frontend`, `make domain DOMAIN=app.example.com`.
-`make github-role` sets up keyless deploys from GitHub Actions: put the word `deploy` in a commit
-message on `main`. The scripts and CloudFormation templates are in `scripts/` and `infra/`.
+Backend: ECR image (tagged with the commit SHA) → ECS Fargate behind an ALB with HTTPS, RDS
+PostgreSQL, password in Secrets Manager. Frontend: static export in private S3 behind CloudFront.
+Migrations run when the container starts.
+
+One-time setup (your own AWS account, MFA on the root user, an IAM user, `aws configure` or SSO):
+
+```bash
+cp .env.example .env            # set AWS_REGION, API_DOMAIN=api.example.com, APP_DOMAIN=app.example.com
+make cert-backend               # ACM certificate for the API (DNS-validated; Route 53 is automatic)
+make deploy-backend             # image → ECR → ECS; prints the API URL and writes BACKEND_URL
+make deploy-frontend            # builds against BACKEND_URL, syncs to S3, invalidates CloudFront
+make cert DOMAIN=app.example.com && make domain DOMAIN=app.example.com   # frontend domain + HTTPS
+make deploy-backend             # again: lets CORS allow the frontend domain
+```
+
+Keyless CI/CD: `make github-role` creates an OIDC role trusted only for `main` of your repo and sets
+the repository variables. After that every push to `main` runs lint + tests, and if they pass,
+deploys the backend and then the frontend (`.github/workflows/ci.yml`). Pull requests only check.
+
+Rollback: `make rollback-backend IMAGE_TAG=<older commit sha>` (the image is still in ECR).
+Logs: `make logs-backend`. Cost control: `make destroy-frontend destroy-backend` when you're done —
+the RDS instance and the ALB bill by the hour.

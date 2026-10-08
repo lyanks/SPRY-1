@@ -7,7 +7,7 @@ Description: >-
 
   Optionally on a custom domain (make domain DOMAIN=app.example.com): the
   distribution takes the alias and an ACM certificate from us-east-1. Only the
-  frontend takes a custom domain; the API stays on its Lambda function URL.
+  frontend takes a custom domain; the API has its own domain (see infra/backend.yaml).
 
   Built to stay free: CloudFront's always-free tier covers 1 TB/month out and
   10M requests, and nothing here uses a paid extra (no WAF, logging, Lambda@Edge,

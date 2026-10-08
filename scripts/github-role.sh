@@ -27,7 +27,7 @@ done
 
 PROJECT_NAME="${PROJECT_NAME:-spry}"
 STACK_NAME="${GITHUB_ROLE_STACK_NAME:-${PROJECT_NAME}-github-oidc}"
-AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
+AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-eu-central-1}}"
 export AWS_DEFAULT_REGION="${AWS_REGION}"
 
 command -v aws >/dev/null 2>&1 || die "aws cli is required"
@@ -91,19 +91,28 @@ log "role ready: ${ROLE_ARN}"
 
 # --- tell the repository about it ---------------------------------------------
 
-# Not a secret: the ARN is useless without a token from this repo's workflows.
+# Not secrets: the ARN is useless without a token from this repo's workflows.
+VARS=(
+  "AWS_DEPLOY_ROLE_ARN=${ROLE_ARN}"
+  "AWS_REGION=${AWS_REGION}"
+  "PROJECT_NAME=${PROJECT_NAME}"
+  "API_DOMAIN=${API_DOMAIN:-}"
+  "APP_DOMAIN=${APP_DOMAIN:-}"
+)
+
 if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   log "setting repository variables with gh"
-  gh variable set AWS_DEPLOY_ROLE_ARN --repo "${REPO}" --body "${ROLE_ARN}"
-  gh variable set AWS_REGION --repo "${REPO}" --body "${AWS_REGION}"
+  for pair in "${VARS[@]}"; do
+    [[ "${pair#*=}" == "" ]] && continue
+    gh variable set "${pair%%=*}" --repo "${REPO}" --body "${pair#*=}"
+  done
   echo
-  echo "  Done. Write \"deploy\" in a commit message on main and the backend ships."
+  echo "  Done. Every push to main now lints, tests and deploys both halves."
 else
   echo
-  echo "  gh is not installed or not logged in. Set these two repository"
-  echo "  variables by hand, under Settings -> Secrets and variables -> Actions:"
+  echo "  gh is not installed or not logged in. Set these repository variables"
+  echo "  by hand, under Settings -> Secrets and variables -> Actions -> Variables:"
   echo
-  echo "    AWS_DEPLOY_ROLE_ARN = ${ROLE_ARN}"
-  echo "    AWS_REGION          = ${AWS_REGION}"
+  for pair in "${VARS[@]}"; do echo "    ${pair%%=*} = ${pair#*=}"; done
   echo
 fi

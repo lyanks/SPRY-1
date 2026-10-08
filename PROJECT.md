@@ -22,7 +22,7 @@ frontend/   Next.js (static export), Tailwind, shadcn/ui     -> talks to the bac
   lib/api.ts              the only place that calls the backend; zod schemas mirror section 3
   lib/queries.ts          React Query hooks; any change refreshes meetings, insights, slots and readiness
   lib/time.ts             all date maths, in the working timezone (Europe/Kyiv)
-infra/      CloudFormation: Lambda + Aurora, S3 + CloudFront, GitHub OIDC role
+infra/      CloudFormation: ECS Fargate + ALB + RDS, S3 + CloudFront, GitHub OIDC role
 scripts/    deploy / destroy helpers behind the Makefile
 docker-compose.yml   db + backend + frontend; `docker compose up --build` is the one command
 ```

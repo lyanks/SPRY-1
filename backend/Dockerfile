@@ -3,7 +3,7 @@
 # --- builder: resolve dependencies into a self-contained virtualenv ---
 FROM python:3.12-slim AS builder
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.32 /uv /usr/local/bin/uv
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
@@ -57,23 +57,3 @@ EXPOSE 8000
 
 CMD ["./scripts/entrypoint.sh"]
 
-
-# --- lambda: what scripts/deploy-backend.sh ships to AWS Lambda ---
-# AWS's base image carries the runtime interface client. The virtualenv from
-# the builder cannot be reused here - it points at /usr/local/bin/python - so
-# the locked dependencies are installed straight into the task root instead.
-FROM public.ecr.aws/lambda/python:3.12 AS lambda
-
-RUN --mount=from=ghcr.io/astral-sh/uv:latest,source=/uv,target=/bin/uv \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    uv export --frozen --no-dev --no-hashes --no-emit-project -o /tmp/requirements.txt \
-    && uv pip install --no-cache --compile-bytecode \
-        --target "${LAMBDA_TASK_ROOT}" -r /tmp/requirements.txt \
-    && rm /tmp/requirements.txt
-
-COPY app ${LAMBDA_TASK_ROOT}/app
-COPY migrations ${LAMBDA_TASK_ROOT}/migrations
-COPY alembic.ini ${LAMBDA_TASK_ROOT}/
-
-CMD ["app.lambda_handler.handler"]
