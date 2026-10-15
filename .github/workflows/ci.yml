@@ -3,16 +3,18 @@ name: CI/CD
 # Every push and pull request is linted and tested. Only a push to main that
 # passes both goes on to deploy: the backend first (its URL is compiled into the
 # frontend), then the frontend. AWS is reached through OIDC - no stored keys.
+# (No `environment:` on the deploy job: it would change the OIDC subject the
+# AWS role trusts from the branch to the environment.)
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
 
 concurrency:
   # One deploy at a time, and never cancel one halfway through a stack update.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
 permissions:
   contents: read
@@ -102,9 +104,8 @@ jobs:
   deploy:
     name: Deploy to AWS
     needs: [backend, frontend, infra]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
-    environment: production
     permissions:
       id-token: write # lets the job ask GitHub for the OIDC token
       contents: read

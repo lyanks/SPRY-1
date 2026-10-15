@@ -44,7 +44,11 @@ if [[ -z "${REPO}" ]]; then
 fi
 [[ "${REPO}" == */* ]] || die "could not work out the repo - set GITHUB_REPO=owner/repo in .env"
 
-SUBJECT_CLAIM="${GITHUB_SUBJECT_CLAIM:-ref:refs/heads/main}"
+# Only runs on the deploy branch may assume the role. That is the branch you are
+# on if it is main or master, else main; set DEPLOY_BRANCH to override.
+BRANCH="${DEPLOY_BRANCH:-$(git -C "${ROOT}" symbolic-ref --short HEAD 2>/dev/null || true)}"
+case "${BRANCH}" in main | master) ;; *) BRANCH="${DEPLOY_BRANCH:-main}" ;; esac
+SUBJECT_CLAIM="${GITHUB_SUBJECT_CLAIM:-ref:refs/heads/${BRANCH}}"
 
 log "repository ${REPO}"
 log "trusting only runs matching repo:${REPO}:${SUBJECT_CLAIM}"

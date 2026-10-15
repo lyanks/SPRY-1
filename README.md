@@ -60,8 +60,8 @@ make cert DOMAIN=app.example.com && make domain DOMAIN=app.example.com   # front
 make deploy-backend             # again: lets CORS allow the frontend domain
 ```
 
-Keyless CI/CD: `make github-role` creates an OIDC role trusted only for `main` of your repo and sets
-the repository variables. After that every push to `main` runs lint + tests, and if they pass,
+Keyless CI/CD: `make github-role` creates an OIDC role trusted only for your deploy branch (`main` or `master`, whichever you push to) and sets
+the repository variables. After that every push to `main`/`master` runs lint + tests, and if they pass,
 deploys the backend and then the frontend (`.github/workflows/ci.yml`). Pull requests only check.
 
 Rollback: `make rollback-backend IMAGE_TAG=<older commit sha>` (the image is still in ECR).

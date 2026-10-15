@@ -18,7 +18,8 @@ load_env() {
     # shellcheck disable=SC1090
     source "${ENV_FILE}"
     set +a
-    eval "${preset}"
+    # -g: inside a function, a plain `declare` would only make locals.
+    eval "${preset//declare -x /declare -gx }"
   fi
 
   # A blank AWS_PROFILE is read as a profile literally named "", and blank keys
@@ -29,7 +30,7 @@ load_env() {
   done
 
   PROJECT_NAME="${PROJECT_NAME:-spry}"
-  AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-eu-central-1}}"
+  AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-eu-north-1}}"
   export AWS_DEFAULT_REGION="${AWS_REGION}"
 }
 
