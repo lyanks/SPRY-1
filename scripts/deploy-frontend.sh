@@ -102,13 +102,36 @@ SITE_URL="$(outputs SiteUrl)"
 
 # --- build ------------------------------------------------------------------
 
+# --- sign-in (Lab 4) --------------------------------------------------------
+
+# If the Cognito stack exists (make deploy-auth), the build is told where it is.
+# These are public values (a pool id, a public client id, a domain), but like
+# the API URL they are compiled in, so redeploy the frontend after changing them.
+AUTH_STACK="${AUTH_STACK_NAME:-${PROJECT_NAME}-auth}"
+AUTH_ENV=()
+if aws cloudformation describe-stacks --stack-name "${AUTH_STACK}" >/dev/null 2>&1; then
+  auth_output() {
+    aws cloudformation describe-stacks --stack-name "${AUTH_STACK}" \
+      --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text
+  }
+  AUTH_ENV=(
+    "NEXT_PUBLIC_COGNITO_AUTHORITY=$(auth_output Authority)"
+    "NEXT_PUBLIC_COGNITO_CLIENT_ID=$(auth_output ClientId)"
+    "NEXT_PUBLIC_COGNITO_DOMAIN=$(auth_output CognitoDomain)"
+  )
+  log "sign-in: building against ${AUTH_STACK}"
+else
+  log "no ${AUTH_STACK} stack - building without sign-in"
+fi
+
 log "installing dependencies"
 (cd "${APP}" && "${PM[@]}" install --frozen-lockfile)
 
 log "building the static export"
 rm -rf "${APP}/out"
-(cd "${APP}" && NEXT_OUTPUT=export \
+(cd "${APP}" && env NEXT_OUTPUT=export \
   NEXT_PUBLIC_API_URL="${API_URL}" \
+  ${AUTH_ENV[@]+"${AUTH_ENV[@]}"} \
   "${PM[@]}" build)
 [[ -f "${APP}/out/index.html" ]] || die "the export produced no out/index.html"
 
@@ -145,6 +168,7 @@ echo
 echo "  site       ${SITE_URL}"
 echo "  meetings   ${SITE_URL}/meetings"
 echo "  api        ${API_URL}"
+[[ ${#AUTH_ENV[@]} -eq 0 ]] || echo "  sign-in    ${SITE_URL}/login/"
 echo "  bucket     s3://${BUCKET}"
 echo
 
