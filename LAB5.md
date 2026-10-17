@@ -1,9 +1,82 @@
-# Lab 5 - the weekly meetings report (answers)
+# Lab 5 - the weekly meetings report
 
-Code: `backend/app/reports/` (report + builder handler), `infra/reports.yaml` (queue, schedule,
-S3 + endpoint, builder and mailer Lambdas), `scripts/reports.sh` (`make deploy-reports`,
-`make report-now`). The report logic is a plain function and is tested without AWS
-(`backend/tests/test_reports.py`).
+Commit: https://github.com/lyanks/SPRY-1/commit/11e198488bd487042ea59a3abc593f392eab5146
+(branch `lab5`: the report code, the infrastructure template and the two Lambda handlers).
+
+## Hand-in checklist
+
+| # | Item | Where |
+|---|------|-------|
+| 1 | Link to the commit | the link above |
+| 2 | Screenshot of the delivered email, CSV attached | `evidence/email.png` (or attached to the submission) |
+| 3 | `aws s3 ls ... --recursive`, one report from the schedule and one from `make report-now` | section "Evidence" below |
+| 4 | Three CloudWatch lines: `trigger=schedule`, `trigger=sqs`, `trigger=s3` | section "Evidence" below |
+| 5 | Written answers to Step 7 | section "Step 7" below |
+
+## What it does
+
+Every Monday at 07:00 (Europe/Kyiv) the system builds a CSV report of last week's meetings, saves it
+in S3 and emails it. Nobody clicks anything. Three triggers are involved:
+
+```
+EventBridge Scheduler / make report-now
+   |  1. a schedule (or a person) puts a command on the queue
+   v
+SQS report-requests (+ dead-letter queue after 3 failures)
+   |  2. an SQS message starts the builder
+   v
+Lambda report-builder (in the VPC) -- reads PostgreSQL --> writes reports/<week>.csv to S3
+                                                            (through the free S3 gateway endpoint)
+   |  3. the new file in S3 is an event
+   v
+Lambda report-mailer (outside the VPC) -- reads the file --> Amazon SES --> my inbox
+```
+
+- Code: `backend/app/reports/weekly.py` (a plain function, no AWS in it, tested in
+  `backend/tests/test_reports.py`) and `backend/app/reports/lambda_handler.py` (the builder handler).
+- Infrastructure: `infra/reports.yaml` (queue, dead-letter queue, schedule, bucket with a 90-day rule,
+  S3 endpoint, both Lambdas, the S3 notification and its permission). The mailer is written inline.
+- Commands: `make deploy-reports`, `make report-now WEEK=2026-W40`, `make destroy-reports`
+  (`scripts/reports.sh`).
+- The report: meetings and hours in the week, the same for the week before and the change, and the five
+  longest meetings. The week is a parameter, and the file name is always `reports/<week>.csv`, so
+  building a week twice overwrites one file (idempotent).
+
+### Where my setup differs from the assignment text
+
+- Region **eu-north-1** instead of us-east-1 (the S3 endpoint uses the stack's own region).
+- **RDS PostgreSQL** instead of Aurora Serverless v2 (no 15-second resume, but the 60-second timeout stays).
+- SES sandbox: the sender and the recipient are **one verified email address** (`REPORT_EMAIL`), not a domain.
+- Since Lab 4 every calendar is private to its owner, but the report is a team-wide one: it reads all
+  meetings and is not tied to a user.
+
+## Evidence
+
+On-demand requests (`make report-now`), each answered by an SQS `MessageId`:
+
+```
+make report-now WEEK=2026-W39   MessageId 969997cb-bf19-4645-8fb3-6781d028cb81   (the week made to fail, see Step 7 test 3)
+make report-now WEEK=2026-W40   MessageId b0c0ff3e-d338-4947-b676-f98a1c514f9b
+```
+
+Paste the real output of these three commands here (they are the proof for items 3 and 4):
+
+```
+aws s3 ls s3://spry-reports-818566829750/reports/ --recursive --region eu-north-1
+<paste: shows reports/2026-W41.csv (schedule) and reports/2026-W40.csv (make report-now)>
+
+builder, trigger=schedule:  <paste one line>
+builder, trigger=sqs:       <paste one line>
+mailer,  trigger=s3:        <paste one line>
+```
+
+The commands that produce those lines:
+
+```
+aws logs filter-log-events --region eu-north-1 --log-group-name /aws/lambda/spry-report-builder --filter-pattern '"trigger=schedule"' --query 'events[].message' --output text
+aws logs filter-log-events --region eu-north-1 --log-group-name /aws/lambda/spry-report-builder --filter-pattern '"trigger=sqs"' --query 'events[].message' --output text
+aws logs filter-log-events --region eu-north-1 --log-group-name /aws/lambda/spry-report-mailer --filter-pattern '"trigger=s3"' --query 'events[].message' --output text
+```
 
 ## Step 7 - written answers
 
@@ -37,12 +110,26 @@ person and **mints a fresh short-lived presigned URL** and redirects to it. The 
 its own and never exposes the bucket.
 
 **4. Send the same week twice - how many emails?**
-Two. The builder is idempotent: both runs write the same key, `reports/2026-W40.csv`, so there is one file. But each
-overwrite is a new `ObjectCreated` event, so the mailer runs twice and sends two emails. Writing a file twice is
-harmless; sending an email twice is not, which is why question 1 needs its own "already sent" record.
-(Derived from the design. **Replace this line with what you observed** after running `make report-now WEEK=...` twice.)
+Two. The builder is idempotent: both runs write the same key, `reports/2026-W40.csv`, so there is one file in
+S3. But each overwrite is a new `ObjectCreated` event, so the mailer runs twice and sends two emails. Writing a
+file twice is harmless; sending an email twice is not, which is why question 1 needs its own "already sent"
+record.
 
-## How the Step 7 tests were run
+**Observed:** I ran `make report-now WEEK=2026-W40` twice and received **<N> emails** in my inbox.
+
+### Step 7 test results
+
+1. `make report-now WEEK=2026-W40`: a new object in S3, builder log `trigger=sqs`, mailer log `trigger=s3`,
+   and the email arrived (screenshot in the hand-in).
+2. Schedule: set to `rate(5 minutes)` for one run, builder log `trigger=schedule`, then set back to
+   `cron(0 7 ? * MON *)`.
+3. Dead-letter queue: `FAIL_WEEK=2026-W39 make deploy-reports` makes the builder raise for that week only.
+   After `make report-now WEEK=2026-W39` the message was received 3 times and then moved to
+   `report-requests-dlq`: **<what I saw>**. After deploying the fixed code (`FAIL_WEEK` empty) I used
+   **Start DLQ redrive** in the SQS console and the report was built: **<what I saw>**.
+4. Same week twice: see answer 4 above.
+
+## How the tests were run
 
 ```
 make deploy-reports                                   # normal deploy
