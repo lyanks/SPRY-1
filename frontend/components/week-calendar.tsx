@@ -79,7 +79,8 @@ type Props = {
   weekStart: string;
   today: string;
   meetings: Meeting[];
-  onSelect: (meeting: Meeting) => void;
+  /** Omit for a read-only calendar (the guest demo). */
+  onSelect?: (meeting: Meeting) => void;
 };
 
 export function WeekCalendar({ weekStart, today, meetings, onSelect }: Props) {
@@ -224,10 +225,11 @@ export function WeekCalendar({ weekStart, today, meetings, onSelect }: Props) {
                     <button
                       key={meeting.id}
                       type="button"
-                      onClick={() => onSelect(meeting)}
+                      disabled={!onSelect}
+                      onClick={() => onSelect?.(meeting)}
                       aria-label={`${meeting.title}, ${formatTime(meeting.starts_at)} to ${formatTime(meeting.ends_at)}${missingAgenda ? ", no agenda" : ""}`}
                       className={cn(
-                        "absolute z-10 overflow-hidden rounded-lg border-l-4 px-2 py-1 text-left text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-violet",
+                        "absolute z-10 overflow-hidden rounded-lg border-l-4 disabled:cursor-default px-2 py-1 text-left text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-violet",
                         KIND_STYLE[meeting.kind],
                       )}
                       style={{

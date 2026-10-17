@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { readAccessToken } from "@/lib/auth-config";
+
 export function apiBaseUrl(): string {
   if (typeof window === "undefined") {
     return process.env.INTERNAL_API_URL ?? "http://backend:8000";
@@ -22,6 +24,7 @@ async function request<T>(
   schema: z.ZodType<T>,
   init?: RequestInit,
 ): Promise<T> {
+  const token = readAccessToken();
   let response: Response;
   try {
     response = await fetch(`${apiBaseUrl()}${path}`, {
@@ -29,6 +32,7 @@ async function request<T>(
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(init?.headers ?? {}),
       },
     });

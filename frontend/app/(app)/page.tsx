@@ -1,7 +1,7 @@
-import { Dashboard } from "@/components/dashboard";
+import { Home } from "@/components/home";
 
-export const metadata = { title: "Your week · Spry" };
+export const metadata = { title: "Spry" };
 
 export default function HomePage() {
-  return <Dashboard />;
+  return <Home />;
 }

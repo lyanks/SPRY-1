@@ -24,6 +24,7 @@ NOW = datetime(2026, 10, 7, 6, 0, tzinfo=UTC)
 os.environ["APP_ENV"] = "test"
 os.environ["DATABASE_URL"] = _test_database_url()
 
+from app.auth import User, current_user  # noqa: E402
 from app.clock import get_now  # noqa: E402
 from app.db import Base, get_session  # noqa: E402
 from app.main import create_app  # noqa: E402
@@ -71,8 +72,8 @@ async def session(engine) -> AsyncIterator[AsyncSession]:
     await connection.close()
 
 
-@pytest.fixture
-async def anon_client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
+def _make_app(session: AsyncSession, user_id: str | None):
+    """The app on the test session. `user_id=None` leaves real authentication in place."""
     app = create_app()
 
     async def _override() -> AsyncIterator[AsyncSession]:
@@ -80,12 +81,30 @@ async def anon_client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
 
     app.dependency_overrides[get_session] = _override
     app.dependency_overrides[get_now] = lambda: NOW
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
-    app.dependency_overrides.clear()
+    if user_id is not None:
+        app.dependency_overrides[current_user] = lambda: User(id=user_id)
+    return app
 
 
 @pytest.fixture
-async def client(anon_client: AsyncClient) -> AsyncClient:
-    return anon_client
+async def anon_client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
+    """No token and no override: whatever the API does to a stranger."""
+    app = _make_app(session, None)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client
+
+
+@pytest.fixture
+async def client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
+    """Signed in as Ada."""
+    app = _make_app(session, "user-ada")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client
+
+
+@pytest.fixture
+async def other_client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
+    """Signed in as Grace, on the same database as `client`."""
+    app = _make_app(session, "user-grace")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client

@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >-
+  Spry sign-in (Lab 4): an Amazon Cognito user pool with managed login, so the
+  site can sign people in with an email and a password or with a Google account.
+  The browser talks only to Cognito; Cognito talks to Google. For the frontend a
+  Google user and a password user look the same: both come back with Cognito tokens.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: spry
+
+  SiteUrl:
+    Type: String
+    AllowedPattern: "^https://[^/]+$"
+    Description: >-
+      The site's origin, without a trailing slash (the frontend stack's SiteUrl
+      output). Cognito only returns the browser to URLs listed here.
+
+  GoogleClientId:
+    Type: String
+    Description: The OAuth client ID of the Google "Web application" client.
+
+  GoogleClientSecret:
+    Type: String
+    NoEcho: true
+    Description: >-
+      The matching client secret. Lives in .env (gitignored) and in Cognito;
+      never in the repository or the frontend build.
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${ProjectName}-users"
+      # Managed login needs Essentials; the first 10,000 monthly users are free.
+      UserPoolTier: ESSENTIALS
+      # People sign in with their email, not a separate username.
+      UsernameAttributes: [email]
+      # Cognito emails a confirmation code to verify the address.
+      AutoVerifiedAttributes: [email]
+      # Self sign-up stays on, so the lecturer can create their own account.
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - { Name: verified_email, Priority: 1 }
+      # So `make destroy-auth` can remove the pool when the lab is over.
+      DeletionProtection: INACTIVE
+      UserPoolTags:
+        PROJECT_NAME: !Ref ProjectName
+
+  GoogleProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      UserPoolId: !Ref UserPool
+      ProviderName: Google
+      ProviderType: Google
+      ProviderDetails:
+        client_id: !Ref GoogleClientId
+        client_secret: !Ref GoogleClientSecret
+        authorize_scopes: "openid email profile"
+      # Without the mapping a Google user arrives with no email, and the
+      # header would have nothing to show.
+      AttributeMapping:
+        email: email
+        email_verified: email_verified
+
+  # A public client: a browser cannot keep a secret, so it gets none. PKCE
+  # (done by the OIDC library) protects the code exchange instead.
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    # A client that names a provider which does not exist yet fails to create.
+    DependsOn: GoogleProvider
+    Properties:
+      ClientName: !Sub "${ProjectName}-web"
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows: [code]
+      AllowedOAuthScopes: [openid, email, profile]
+      SupportedIdentityProviders: [COGNITO, Google]
+      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      # Cognito matches these exactly, trailing slash included, so both
+      # spellings are listed. localhost is for `docker compose up`.
+      CallbackURLs:
+        - !Sub "${SiteUrl}/auth/callback"
+        - !Sub "${SiteUrl}/auth/callback/"
+        - http://localhost:3000/auth/callback
+        - http://localhost:3000/auth/callback/
+      LogoutURLs:
+        - !Sub "${SiteUrl}/"
+        - http://localhost:3000/
+
+  # The prefix is built from the account id, so it is unique, stable, and known
+  # before the first deploy - which Google's console needs (see `make auth-uris`).
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub "${ProjectName}-${AWS::AccountId}"
+      UserPoolId: !Ref UserPool
+      ManagedLoginVersion: 2
+
+  # Without branding, a version 2 domain has no sign-in page to show.
+  ManagedLoginBranding:
+    Type: AWS::Cognito::ManagedLoginBranding
+    DependsOn: UserPoolDomain
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientId: !Ref UserPoolClient
+      UseCognitoProvidedValues: true
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+
+  ClientId:
+    Value: !Ref UserPoolClient
+
+  Authority:
+    Description: The OIDC issuer; the frontend's `authority`.
+    Value: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+
+  CognitoDomain:
+    Description: Cognito's hosted domain; also where /logout lives.
+    Value: !Sub "https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com"
+
+  GoogleRedirectUri:
+    Description: The "Authorised redirect URI" Google's OAuth client must list.
+    Value: !Sub "https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com/oauth2/idpresponse"
+
+  LoginUrl:
+    Description: The page to hand in.
+    Value: !Sub "${SiteUrl}/login/"

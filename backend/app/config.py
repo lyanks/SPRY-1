@@ -23,6 +23,12 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:3000"]
     )
 
+    # Amazon Cognito. All three set -> the API checks the access token on every
+    # request. All empty is only allowed in development (see app/auth.py).
+    cognito_region: str = ""
+    cognito_user_pool_id: str = ""
+    cognito_client_id: str = ""
+
     # Working week used by the insights (FR-8). One shared setting until
     # members have their own profile.
     work_timezone: str = "Europe/Kyiv"
@@ -40,6 +46,16 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    @property
+    def cognito_issuer(self) -> str:
+        return (
+            f"https://cognito-idp.{self.cognito_region}.amazonaws.com/{self.cognito_user_pool_id}"
+        )
+
+    @property
+    def auth_configured(self) -> bool:
+        return bool(self.cognito_region and self.cognito_user_pool_id and self.cognito_client_id)
 
     @property
     def is_development(self) -> bool:

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/plus-jakarta-sans";
 
+import { AuthProvider } from "@/components/auth-provider";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -18,8 +19,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           hydrates; this silences that one-level mismatch only. */}
       <body className="min-h-full" suppressHydrationWarning>
         <Providers>
-          {children}
-          <Toaster />
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </Providers>
       </body>
     </html>

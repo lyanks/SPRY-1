@@ -4,6 +4,8 @@ import { CalendarDays, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { UserMenu } from "@/components/user-menu";
+import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -13,6 +15,9 @@ const links = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const session = useSession();
+  // Meetings are personal; the sample on the front page is all a guest has.
+  const visible = session === "guest" ? links.slice(0, 1) : links;
 
   return (
     <div className="flex min-h-screen flex-col gap-3 p-3 md:flex-row md:gap-4 md:p-5">
@@ -25,7 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           S
         </Link>
         <nav aria-label="Main" className="flex gap-2 md:mt-6 md:flex-col">
-          {links.map(({ href, label, icon: Icon }) => {
+          {visible.map(({ href, label, icon: Icon }) => {
             const active =
               href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
@@ -48,7 +53,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       </aside>
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1">
+        <header className="mb-3 flex min-h-8 justify-end">
+          <UserMenu />
+        </header>
+        {children}
+      </main>
     </div>
   );
 }

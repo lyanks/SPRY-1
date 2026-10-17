@@ -80,3 +80,25 @@ describe("meetings api", () => {
     expect(result.meeting_minutes).toEqual(metric);
   });
 });
+
+describe("authorization", () => {
+  it("sends the signed-in user's access token", async () => {
+    vi.resetModules();
+    vi.doMock("@/lib/auth-config", () => ({
+      readAccessToken: () => "tok-123",
+    }));
+    const { api: authed } = await import("@/lib/api");
+    const spy = mockFetch([]);
+    await authed.listMeetings();
+    const headers = spy.mock.calls[0][1]?.headers as Record<string, string>;
+    expect(headers.Authorization).toBe("Bearer tok-123");
+    vi.doUnmock("@/lib/auth-config");
+  });
+
+  it("sends none when nobody is signed in", async () => {
+    const spy = mockFetch([]);
+    await api.listMeetings();
+    const headers = spy.mock.calls[0][1]?.headers as Record<string, string>;
+    expect(headers.Authorization).toBeUndefined();
+  });
+});

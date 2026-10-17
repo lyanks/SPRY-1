@@ -22,24 +22,27 @@ def _metric(current: float, previous: float) -> Metric:
 
 
 async def _events(
-    session: AsyncSession, start: datetime, end: datetime, kinds: tuple[str, ...]
+    session: AsyncSession, owner_id: str, start: datetime, end: datetime, kinds: tuple[str, ...]
 ) -> list[Meeting]:
     """Events that overlap [start, end)."""
     result = await session.execute(
         select(Meeting).where(
-            Meeting.starts_at < end, Meeting.ends_at > start, Meeting.kind.in_(kinds)
+            Meeting.owner_id == owner_id,
+            Meeting.starts_at < end,
+            Meeting.ends_at > start,
+            Meeting.kind.in_(kinds),
         )
     )
     return list(result.scalars().all())
 
 
 async def _week(
-    session: AsyncSession, settings: Settings, week_start: date
+    session: AsyncSession, owner_id: str, settings: Settings, week_start: date
 ) -> tuple[int, int, int]:
     """(meeting minutes, meeting count, deep-work minutes) for one ISO week."""
     tz = _tz(settings)
     start, end = schedule.week_bounds(week_start, tz)
-    meetings = await _events(session, start, end, ("meeting",))
+    meetings = await _events(session, owner_id, start, end, ("meeting",))
     # A meeting counts in the week it starts in; busy time uses every overlapping one.
     in_week = [m for m in meetings if start <= m.starts_at < end]
     meeting_minutes = sum(schedule.minutes((m.starts_at, m.ends_at)) for m in in_week)
@@ -51,10 +54,12 @@ async def _week(
     return meeting_minutes, len(in_week), deep
 
 
-async def week_insights(session: AsyncSession, settings: Settings, week_of: date) -> WeekInsights:
+async def week_insights(
+    session: AsyncSession, owner_id: str, settings: Settings, week_of: date
+) -> WeekInsights:
     week_start = schedule.monday_of(week_of)
-    cur = await _week(session, settings, week_start)
-    prev = await _week(session, settings, week_start - timedelta(days=7))
+    cur = await _week(session, owner_id, settings, week_start)
+    prev = await _week(session, owner_id, settings, week_start - timedelta(days=7))
     return WeekInsights(
         week_start=week_start,
         week_end=week_start + timedelta(days=6),
@@ -66,7 +71,7 @@ async def week_insights(session: AsyncSession, settings: Settings, week_of: date
 
 
 async def propose_deep_work(
-    session: AsyncSession, settings: Settings, now: datetime
+    session: AsyncSession, owner_id: str, settings: Settings, now: datetime
 ) -> SlotProposal:
     """Free slots in the current and the next week (FR-14)."""
     tz = _tz(settings)
@@ -74,7 +79,7 @@ async def propose_deep_work(
     slots: list[Slot] = []
     for week_start in (this_monday, this_monday + timedelta(days=7)):
         start, end = schedule.week_bounds(week_start, tz)
-        busy_events = await _events(session, start, end, ("meeting", "focus"))
+        busy_events = await _events(session, owner_id, start, end, ("meeting", "focus"))
         windows = schedule.working_windows(
             week_start, tz, settings.work_start_hour, settings.work_end_hour
         )
@@ -91,13 +96,18 @@ async def propose_deep_work(
 
 
 async def agenda_readiness(
-    session: AsyncSession, now: datetime, window_days: int = 7
+    session: AsyncSession, owner_id: str, now: datetime, window_days: int = 7
 ) -> AgendaReadiness:
     """Share of meetings in the next `window_days` that have no agenda (FR-17, FR-18)."""
     end = now + timedelta(days=window_days)
     result = await session.execute(
         select(Meeting)
-        .where(Meeting.kind == "meeting", Meeting.starts_at >= now, Meeting.starts_at < end)
+        .where(
+            Meeting.owner_id == owner_id,
+            Meeting.kind == "meeting",
+            Meeting.starts_at >= now,
+            Meeting.starts_at < end,
+        )
         .order_by(Meeting.starts_at.asc())
     )
     upcoming = list(result.scalars().all())

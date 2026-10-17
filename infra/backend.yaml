@@ -46,6 +46,19 @@ Parameters:
     Default: ""
     Description: Comma-separated browser origins allowed to call the API, e.g. https://app.example.com
 
+  CognitoUserPoolId:
+    Type: String
+    Default: ""
+    Description: >-
+      The spry-auth stack's UserPoolId. The API only accepts access tokens issued by
+      this pool. Empty means sign-in is not deployed yet and the API refuses every
+      request for a calendar.
+
+  CognitoClientId:
+    Type: String
+    Default: ""
+    Description: The spry-auth stack's ClientId; tokens for any other app client are refused.
+
   DesiredCount:
     Type: Number
     Default: 1
@@ -239,6 +252,9 @@ Resources:
             - { Name: APP_ENV, Value: production }
             - { Name: LOG_LEVEL, Value: info }
             - { Name: CORS_ORIGINS, Value: !Ref CorsOrigins }
+            - { Name: COGNITO_REGION, Value: !Ref "AWS::Region" }
+            - { Name: COGNITO_USER_POOL_ID, Value: !Ref CognitoUserPoolId }
+            - { Name: COGNITO_CLIENT_ID, Value: !Ref CognitoClientId }
             # scripts/entrypoint.sh assembles DATABASE_URL from these parts.
             - { Name: DB_HOST, Value: !GetAtt Database.Endpoint.Address }
             - { Name: DB_PORT, Value: !GetAtt Database.Endpoint.Port }
@@ -446,3 +462,7 @@ Outputs:
 
   DatabaseEndpoint:
     Value: !GetAtt Database.Endpoint.Address
+
+  DatabaseSecurityGroupId:
+    Description: The report-builder Lambda is let in through this group (infra/reports.yaml).
+    Value: !Ref DatabaseSecurityGroup

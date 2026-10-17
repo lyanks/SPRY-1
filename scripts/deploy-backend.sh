@@ -120,6 +120,21 @@ if [[ -z "${CORS}" ]]; then
 fi
 [[ -n "${CORS}" ]] || warn "CORS_ORIGINS is empty (no frontend yet) - run make deploy-backend again after make deploy-frontend"
 
+# --- who may call it --------------------------------------------------------
+
+# Once the sign-in stack exists, the API only accepts its tokens. Before that
+# the API refuses every calendar request, which is the safe default.
+AUTH_STACK="${AUTH_STACK_NAME:-${PROJECT_NAME}-auth}"
+POOL_ID="$(stack_output "${AUTH_STACK}" UserPoolId)"
+CLIENT_ID="$(stack_output "${AUTH_STACK}" ClientId)"
+[[ "${POOL_ID}" == "None" ]] && POOL_ID=""
+[[ "${CLIENT_ID}" == "None" ]] && CLIENT_ID=""
+if [[ -z "${POOL_ID}" || -z "${CLIENT_ID}" ]]; then
+  warn "no ${AUTH_STACK} stack yet - the API will refuse calendar requests until you run make deploy-auth and then make deploy-backend"
+  POOL_ID=""
+  CLIENT_ID=""
+fi
+
 # --- roll it out ------------------------------------------------------------
 
 if aws cloudformation describe-stacks --stack-name "${STACK_NAME}" >/dev/null 2>&1; then
@@ -143,6 +158,8 @@ if ! aws cloudformation deploy \
     "CertificateArn=${CERT_ARN}" \
     "HostedZoneId=${ZONE_ID}" \
     "CorsOrigins=${CORS}" \
+    "CognitoUserPoolId=${POOL_ID}" \
+    "CognitoClientId=${CLIENT_ID}" \
   --no-fail-on-empty-changeset \
   --tags "PROJECT_NAME=${PROJECT_NAME}"; then
   print_failed_events "${STACK_NAME}"
