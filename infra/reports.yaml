@@ -1,0 +1,299 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >-
+  Spry weekly report, event-driven. EventBridge Scheduler and `make report-now`
+  put a command on SQS; the report-builder Lambda (in the VPC, backend image)
+  reads the database and writes reports/<week>.csv to S3 through a gateway
+  endpoint; that file is an event that starts the report-mailer Lambda (outside
+  the VPC), which sends it through SES. Neither function calls the other.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: spry
+  ImageUri:
+    Type: String
+    Description: The Lambda-target image of the backend, in ECR.
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+  RouteTableIds:
+    Type: List<String>
+    Description: Route tables of those subnets; the S3 gateway endpoint is attached to them.
+  DatabaseSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  DatabaseHost:
+    Type: String
+  ReportEmail:
+    Type: String
+    Description: >-
+      A verified SES identity, used as sender and recipient. A new account's SES
+      is in the sandbox and may only send to verified addresses.
+
+Resources:
+  # ---- storage -------------------------------------------------------------
+  # The name is built, not referenced: the bucket's notification needs the
+  # invoke permission to exist first, and the permission needs the bucket's ARN.
+  # With !GetAtt that is a circular dependency; with a constructed name it is not.
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: MailerInvokePermission
+    Properties:
+      BucketName: !Sub "${ProjectName}-reports-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-after-90-days
+            Status: Enabled
+            ExpirationInDays: 90
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: "s3:ObjectCreated:*"
+            Function: !GetAtt MailerFunction.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - { Name: prefix, Value: reports/ }
+                  - { Name: suffix, Value: .csv }
+      Tags:
+        - { Key: PROJECT_NAME, Value: !Ref ProjectName }
+
+  MailerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref MailerFunction
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:s3:::${ProjectName}-reports-${AWS::AccountId}"
+
+  # Free. Without it the builder's PutObject hangs until the timeout: the VPC
+  # has no NAT and the request has nowhere to go.
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VpcId
+      VpcEndpointType: Gateway
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      RouteTableIds: !Ref RouteTableIds
+
+  # ---- queue ---------------------------------------------------------------
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ProjectName}-report-requests-dlq"
+      MessageRetentionPeriod: 1209600
+      Tags:
+        - { Key: PROJECT_NAME, Value: !Ref ProjectName }
+
+  RequestsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ProjectName}-report-requests"
+      # 6 x the builder's 60 s timeout: if the message became visible again
+      # while the first attempt still ran, a second builder would start on the
+      # same report.
+      VisibilityTimeout: 360
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+      Tags:
+        - { Key: PROJECT_NAME, Value: !Ref ProjectName }
+
+  # ---- trigger 1: the schedule (a command onto the queue) ------------------
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-report-scheduler"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: scheduler.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: send-to-queue
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt RequestsQueue.Arn
+
+  WeeklySchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: !Sub "${ProjectName}-weekly-report"
+      ScheduleExpression: cron(0 7 ? * MON *)
+      ScheduleExpressionTimezone: Europe/Kyiv
+      FlexibleTimeWindow: { Mode: "OFF" }
+      Target:
+        Arn: !GetAtt RequestsQueue.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"week": null, "source": "schedule"}'
+
+  # ---- trigger 2: the SQS message -> the builder ---------------------------
+  BuilderSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: report-builder Lambda
+      VpcId: !Ref VpcId
+
+  DatabaseIngressFromBuilder:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DatabaseSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref BuilderSecurityGroup
+      Description: report-builder
+
+  BuilderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-report-builder"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: reports
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${ProjectName}-reports-${AWS::AccountId}/reports/*"
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt RequestsQueue.Arn
+
+  BuilderFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: S3Endpoint
+    Properties:
+      FunctionName: !Sub "${ProjectName}-report-builder"
+      PackageType: Image
+      Code: { ImageUri: !Ref ImageUri }
+      Role: !GetAtt BuilderRole.Arn
+      Timeout: 60 # Aurora/RDS may need a moment; SQS visibility is 6x this
+      MemorySize: 512
+      VpcConfig:
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupIds: [!Ref BuilderSecurityGroup]
+      Environment:
+        Variables:
+          REPORTS_BUCKET: !Sub "${ProjectName}-reports-${AWS::AccountId}"
+          DB_HOST: !Ref DatabaseHost
+          DB_NAME: spry
+          DB_USER: spry
+          DB_SSL: require
+          # Read at deploy time. The function sits in a VPC with no NAT, so it
+          # cannot call Secrets Manager at run time (an interface endpoint would
+          # bill by the hour); the cost is that the value is visible in the
+          # function's configuration.
+          DB_PASSWORD: !Sub "{{resolve:secretsmanager:${ProjectName}/backend/db:SecretString:password}}"
+      Tags:
+        - { Key: PROJECT_NAME, Value: !Ref ProjectName }
+
+  RequestsMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt RequestsQueue.Arn
+      FunctionName: !Ref BuilderFunction
+      BatchSize: 1
+
+  # ---- trigger 3: the file in S3 -> the mailer -----------------------------
+  MailerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-report-mailer"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: read-and-send
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub "arn:aws:s3:::${ProjectName}-reports-${AWS::AccountId}/reports/*"
+              - Effect: Allow
+                Action: ses:SendRawEmail
+                Resource: "*"
+
+  # Not in a VPC: it needs the internet to reach SES, and never touches the
+  # database. It must never write under reports/ - a function triggered by
+  # uploads to a prefix that uploads to the same prefix calls itself forever.
+  MailerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-report-mailer"
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt MailerRole.Arn
+      Timeout: 30
+      Environment:
+        Variables:
+          SENDER: !Ref ReportEmail
+          RECIPIENT: !Ref ReportEmail
+      Code:
+        ZipFile: |
+          import logging
+          from email.message import EmailMessage
+          from os import environ
+          from urllib.parse import unquote_plus
+
+          import boto3
+
+          log = logging.getLogger()
+          log.setLevel(logging.INFO)
+
+
+          def handler(event, context):
+              record = event["Records"][0]
+              bucket = record["s3"]["bucket"]["name"]
+              key = unquote_plus(record["s3"]["object"]["key"])
+              log.info("report-mailer trigger=s3 bucket=%s key=%s", bucket, key)
+
+              body = boto3.client("s3").get_object(Bucket=bucket, Key=key)["Body"].read()
+              week = key.rsplit("/", 1)[-1].removesuffix(".csv")
+
+              msg = EmailMessage()
+              msg["Subject"] = f"Spry weekly meetings report {week}"
+              msg["From"] = environ["SENDER"]
+              msg["To"] = environ["RECIPIENT"]
+              msg.set_content(f"Your weekly meetings report for {week} is attached.")
+              msg.add_attachment(body, maintype="text", subtype="csv", filename=f"{week}.csv")
+
+              boto3.client("sesv2").send_email(Content={"Raw": {"Data": msg.as_bytes()}})
+              log.info("report-mailer sent %s to %s", key, environ["RECIPIENT"])
+      Tags:
+        - { Key: PROJECT_NAME, Value: !Ref ProjectName }
+
+Outputs:
+  BucketName:
+    Value: !Ref ReportsBucket
+  QueueUrl:
+    Value: !Ref RequestsQueue
+  DeadLetterQueueUrl:
+    Value: !Ref DeadLetterQueue

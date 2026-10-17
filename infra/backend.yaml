@@ -446,3 +446,7 @@ Outputs:
 
   DatabaseEndpoint:
     Value: !GetAtt Database.Endpoint.Address
+
+  DatabaseSecurityGroupId:
+    Description: The report-builder Lambda is let in through this group (infra/reports.yaml).
+    Value: !Ref DatabaseSecurityGroup
