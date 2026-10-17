@@ -25,6 +25,18 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
   DatabaseHost:
     Type: String
+  ScheduleExpression:
+    Type: String
+    Default: cron(0 7 ? * MON *)
+    Description: >-
+      When the report is requested. Switch to rate(5 minutes) to watch one run
+      without waiting for Monday, then set it back.
+  FailWeek:
+    Type: String
+    Default: ""
+    Description: >-
+      Lab 3, Step 7: an ISO week (e.g. 2026-W39) for which the builder raises on
+      purpose, to watch the message reach the dead-letter queue. Empty = never.
   ReportEmail:
     Type: String
     Description: >-
@@ -129,7 +141,7 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: !Sub "${ProjectName}-weekly-report"
-      ScheduleExpression: cron(0 7 ? * MON *)
+      ScheduleExpression: !Ref ScheduleExpression
       ScheduleExpressionTimezone: Europe/Kyiv
       FlexibleTimeWindow: { Mode: "OFF" }
       Target:
@@ -201,6 +213,7 @@ Resources:
           DB_NAME: spry
           DB_USER: spry
           DB_SSL: require
+          FAIL_WEEK: !Ref FailWeek
           # Read at deploy time. The function sits in a VPC with no NAT, so it
           # cannot call Secrets Manager at run time (an interface endpoint would
           # bill by the hour); the cost is that the value is visible in the

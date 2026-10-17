@@ -40,4 +40,16 @@ its own and never exposes the bucket.
 Two. The builder is idempotent: both runs write the same key, `reports/2026-W40.csv`, so there is one file. But each
 overwrite is a new `ObjectCreated` event, so the mailer runs twice and sends two emails. Writing a file twice is
 harmless; sending an email twice is not, which is why question 1 needs its own "already sent" record.
-(I derived this from the design; it has not been observed in a running account.)
+(Derived from the design. **Replace this line with what you observed** after running `make report-now WEEK=...` twice.)
+
+## How the Step 7 tests were run
+
+```
+make deploy-reports                                   # normal deploy
+make report-now WEEK=2026-W40                         # trigger=sqs, then trigger=s3 in the mailer log
+SCHEDULE='rate(5 minutes)' make deploy-reports        # one scheduled run: trigger=schedule
+SCHEDULE='cron(0 7 ? * MON *)' make deploy-reports    # set it back
+FAIL_WEEK=2026-W39 make deploy-reports                # the builder raises for that week only
+make report-now WEEK=2026-W39                         # 3 failed receives, then the message is in the DLQ
+make deploy-reports                                   # fixed (FAIL_WEEK empty), then SQS console -> DLQ -> Start DLQ redrive
+```

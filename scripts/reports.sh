@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # The weekly report (Lab 3).
 #
-#   scripts/reports.sh deploy         build the Lambda image, push it, deploy infra/reports.yaml
+#   scripts/reports.sh deploy         (SCHEDULE='rate(5 minutes)' FAIL_WEEK=2026-W39 for the Step 7 tests)
+#                                     build the Lambda image, push it, deploy infra/reports.yaml
 #   scripts/reports.sh now [WEEK]     put a "build this week" message on the queue (default: last week)
 #   scripts/reports.sh destroy        empty the bucket and delete the stack
 #
@@ -67,6 +68,7 @@ case "${MODE}" in
         "SubnetIds=${SUBNET_IDS}" "RouteTableIds=${ROUTE_TABLES}" \
         "DatabaseSecurityGroupId=${DB_SG}" "DatabaseHost=${DB_HOST}" \
         "ReportEmail=${REPORT_EMAIL}" \
+        "ScheduleExpression=${SCHEDULE:-cron(0 7 ? * MON *)}" "FailWeek=${FAIL_WEEK:-}" \
       --tags "PROJECT_NAME=${PROJECT_NAME}" || { print_failed_events "${STACK}"; exit 1; }
 
     echo

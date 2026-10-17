@@ -16,18 +16,26 @@ log.setLevel(logging.INFO)
 
 
 def detect_trigger(event: dict) -> str:
-    records = event.get("Records") or []
-    if records and records[0].get("eventSource") == "aws:sqs":
-        return "sqs"
+    """Which event started this run: "schedule", "sqs" (a message someone sent) or "direct".
+
+    The schedule also arrives through SQS; the message it sends says
+    {"source": "schedule"}, which is how it is told apart from `make report-now`.
+    """
+    if _is_sqs(event):
+        return "schedule" if payload_of(event).get("source") == "schedule" else "sqs"
     if event.get("source") == "schedule":
         return "schedule"
     return "direct"
 
 
-def payload_of(event: dict) -> dict:
+def _is_sqs(event: dict) -> bool:
     records = event.get("Records") or []
-    if records and records[0].get("eventSource") == "aws:sqs":
-        return json.loads(records[0]["body"] or "{}")
+    return bool(records) and records[0].get("eventSource") == "aws:sqs"
+
+
+def payload_of(event: dict) -> dict:
+    if _is_sqs(event):
+        return json.loads(event["Records"][0]["body"] or "{}")
     return event
 
 
@@ -60,6 +68,11 @@ def handler(event, context=None, *, build=None, s3=None, now=None):
     )
     # logging's `extra` does not reach plain-text CloudWatch lines, so say it in the message too.
     log.info("report-builder trigger=%s week=%s", trigger, week)
+
+    # Lab 3, Step 7: set FAIL_WEEK=<week> on the function to watch that week's
+    # message fail three times and land in the dead-letter queue.
+    if os.environ.get("FAIL_WEEK") == week:
+        raise RuntimeError(f"FAIL_WEEK is set to {week}: failing on purpose")
 
     body = (build or build_weekly_report)(week)
     key = report_key(week)

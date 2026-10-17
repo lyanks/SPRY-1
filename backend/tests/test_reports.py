@@ -111,3 +111,34 @@ def test_handler_schedule_defaults_to_the_previous_week(monkeypatch):
     )
     assert result["week"] == "2026-W40"
     assert result["trigger"] == "schedule"
+
+
+def _sqs(body: dict) -> dict:
+    return {"Records": [{"eventSource": "aws:sqs", "body": json.dumps(body)}]}
+
+
+def test_schedule_message_from_sqs_is_logged_as_the_schedule(monkeypatch, caplog):
+    monkeypatch.setenv("REPORTS_BUCKET", "bucket")
+    monday = datetime(2026, 10, 5, 7, tzinfo=UTC)
+    with caplog.at_level("INFO"):
+        result = lambda_handler.handler(
+            _sqs({"week": None, "source": "schedule"}),
+            build=lambda week: b"x",
+            s3=FakeS3(),
+            now=monday,
+        )
+    assert result["trigger"] == "schedule"
+    assert result["week"] == "2026-W40"
+    assert "report-builder trigger=schedule week=2026-W40" in caplog.text
+
+
+def test_fail_week_makes_only_that_week_fail(monkeypatch):
+    monkeypatch.setenv("REPORTS_BUCKET", "bucket")
+    monkeypatch.setenv("FAIL_WEEK", "2026-W39")
+    event = _sqs({"week": "2026-W39", "source": "make"})
+    with pytest.raises(RuntimeError):
+        lambda_handler.handler(event, build=lambda week: b"x", s3=FakeS3())
+    ok = lambda_handler.handler(
+        _sqs({"week": "2026-W38", "source": "make"}), build=lambda week: b"x", s3=FakeS3()
+    )
+    assert ok["week"] == "2026-W38"
