@@ -8,7 +8,7 @@ Commit: https://github.com/lyanks/SPRY-1/commit/11e198488bd487042ea59a3abc593f39
 | # | Item | Where |
 |---|------|-------|
 | 1 | Link to the commit | the link above |
-| 2 | Screenshot of the delivered email, CSV attached | `evidence/email.png` (or attached to the submission) |
+| 2 | Screenshot of the delivered email, CSV attached | attached to the submission |
 | 3 | `aws s3 ls ... --recursive`, one report from the schedule and one from `make report-now` | section "Evidence" below |
 | 4 | Three CloudWatch lines: `trigger=schedule`, `trigger=sqs`, `trigger=s3` | section "Evidence" below |
 | 5 | Written answers to Step 7 | section "Step 7" below |
@@ -59,16 +59,24 @@ make report-now WEEK=2026-W39   MessageId 969997cb-bf19-4645-8fb3-6781d028cb81  
 make report-now WEEK=2026-W40   MessageId b0c0ff3e-d338-4947-b676-f98a1c514f9b
 ```
 
-Paste the real output of these three commands here (they are the proof for items 3 and 4):
+The real output (items 3 and 4):
 
 ```
-aws s3 ls s3://spry-reports-818566829750/reports/ --recursive --region eu-north-1
-<paste: shows reports/2026-W41.csv (schedule) and reports/2026-W40.csv (make report-now)>
-
-builder, trigger=schedule:  <paste one line>
-builder, trigger=sqs:       <paste one line>
-mailer,  trigger=s3:        <paste one line>
+aws s3 ls s3://spry-reports-818566829750/reports/ --recursive
+2026-10-17 20:26:28        374 reports/2026-W40.csv      <- built on demand (make report-now WEEK=2026-W40)
+2026-10-17 20:40:25        232 reports/2026-W41.csv      <- built by the schedule (previous ISO week)
 ```
+
+One line per trigger (times are UTC). The last two are the same chain for 2026-W40, `sqs` then `s3`:
+
+```
+builder, trigger=schedule:  2026-10-17T17:45:23.984Z  fb9ba60b-ed95-57cd-81cd-c5465bfd3c47  report-builder trigger=schedule week=2026-W41
+builder, trigger=sqs:       2026-10-17T17:26:25.813Z  5b81121c-9d0e-5b84-b63c-71512ce0af74  report-builder trigger=sqs week=2026-W40
+mailer,  trigger=s3:        2026-10-17T17:26:28.193Z  42a02970-aafa-41c1-8b9f-ad4c3b7a3360  report-mailer trigger=s3 bucket=spry-reports-818566829750 key=reports/2026-W40.csv
+```
+
+The schedule ran several times during the `rate(5 minutes)` test (for example at 17:36, 17:40 and 17:45), and every
+run built the same file, so S3 holds one `2026-W41.csv`. The report for 2026-W40 has 2 meetings and 2.75 hours.
 
 The commands that produce those lines:
 
@@ -115,19 +123,23 @@ S3. But each overwrite is a new `ObjectCreated` event, so the mailer runs twice 
 file twice is harmless; sending an email twice is not, which is why question 1 needs its own "already sent"
 record.
 
-**Observed:** I ran `make report-now WEEK=2026-W40` twice and received **<N> emails** in my inbox.
+**Observed:** I requested 2026-W40 several times. The first two requests were at 12:11:02 and 12:12:26 UTC (builder
+`trigger=sqs`), and the mailer started once after each of them (`trigger=s3` at 12:11:04 and 12:12:27), while S3
+kept a single `reports/2026-W40.csv`. The same happened for 2026-W41: several scheduled builds, one file, and a
+mailer run after each. So the number of emails equals the number of runs, not the number of files.
 
 ### Step 7 test results
 
-1. `make report-now WEEK=2026-W40`: a new object in S3, builder log `trigger=sqs`, mailer log `trigger=s3`,
-   and the email arrived (screenshot in the hand-in).
-2. Schedule: set to `rate(5 minutes)` for one run, builder log `trigger=schedule`, then set back to
-   `cron(0 7 ? * MON *)`.
-3. Dead-letter queue: `FAIL_WEEK=2026-W39 make deploy-reports` makes the builder raise for that week only.
-   After `make report-now WEEK=2026-W39` the message was received 3 times and then moved to
-   `report-requests-dlq`: **<what I saw>**. After deploying the fixed code (`FAIL_WEEK` empty) I used
-   **Start DLQ redrive** in the SQS console and the report was built: **<what I saw>**.
-4. Same week twice: see answer 4 above.
+- [x] **1. On demand.** `make report-now WEEK=2026-W40` gave a new object in S3, a builder log line with
+  `trigger=sqs`, a mailer log line with `trigger=s3`, and an email in my inbox (screenshot in the hand-in).
+- [x] **2. Schedule.** I set the schedule to `rate(5 minutes)` for one run, found the builder log line with
+  `trigger=schedule`, and set it back to `cron(0 7 ? * MON *)`.
+- [ ] **3. Dead-letter queue.** `FAIL_WEEK=2026-W39 make deploy-reports` makes the builder raise for that week
+  only. After `make report-now WEEK=2026-W39` the message came back 3 times and then sat in
+  `report-requests-dlq`. Note: <how long it took, what the queue showed>
+  After deploying the fixed code (`FAIL_WEEK` empty) I used **Start DLQ redrive** in the SQS console and the
+  report was built. Note: <what I saw>
+- [x] **4. Same week twice.** See answer 4 above.
 
 ## How the tests were run
 
