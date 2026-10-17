@@ -1,6 +1,6 @@
 COMPOSE := docker compose
 
-.PHONY: help up down build logs ps migrate revision test test-backend test-frontend lint fmt clean shell-backend shell-db deploy-backend destroy-backend logs-backend migrate-backend cert domain deploy-frontend destroy-frontend github-role auth-uris deploy-auth destroy-auth
+.PHONY: help up down build logs ps migrate revision test test-backend test-frontend lint fmt clean shell-backend shell-db deploy-backend destroy-backend logs-backend migrate-backend cert domain deploy-frontend destroy-frontend github-role auth-uris deploy-auth destroy-auth deploy-reports report-now destroy-reports
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -90,3 +90,11 @@ deploy-auth:
 
 destroy-auth:
 	./scripts/auth.sh destroy
+deploy-reports: ## Lab 5: deploy the weekly-report stack (needs REPORT_EMAIL in .env)
+	./scripts/reports.sh deploy
+
+report-now: ## Lab 5: build a report on demand: make report-now WEEK=2026-W40
+	./scripts/reports.sh now $(WEEK)
+
+destroy-reports: ## Lab 5: delete the weekly-report stack
+	./scripts/reports.sh destroy
