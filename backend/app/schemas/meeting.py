@@ -1,9 +1,24 @@
+import json
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Kind = Literal["meeting", "focus", "other"]
+
+
+class AiSuggestion(BaseModel):
+    """What the parser suggested, sent back on save and stored beside the final agenda."""
+
+    model: str = Field(min_length=1, max_length=100)
+    prompt_version: str = Field(min_length=1, max_length=50)
+    agenda: dict[str, Any]
+
+    @model_validator(mode="after")
+    def _small(self):
+        if len(json.dumps(self.agenda)) > 20_000:
+            raise ValueError("ai_suggestion is too large")
+        return self
 
 
 def _check_order(starts_at: datetime | None, ends_at: datetime | None) -> None:
@@ -19,6 +34,7 @@ class MeetingCreate(BaseModel):
     # Omitted -> derived: 2+ attendees is a "meeting", otherwise "other" (FR-7).
     kind: Kind | None = None
     agenda: str | None = Field(default=None, max_length=10_000)
+    ai_suggestion: AiSuggestion | None = None
 
     @model_validator(mode="after")
     def _times(self):
@@ -35,6 +51,7 @@ class MeetingUpdate(BaseModel):
     attendee_count: int | None = Field(default=None, ge=1, le=1000)
     kind: Kind | None = None
     agenda: str | None = Field(default=None, max_length=10_000)
+    ai_suggestion: AiSuggestion | None = None
 
     @model_validator(mode="after")
     def _times(self):

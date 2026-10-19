@@ -142,6 +142,12 @@ export type MeetingPayload = {
   ends_at: string;
   attendee_count: number;
   agenda: string | null;
+  /** What the parser suggested (Lab 6), stored beside the final agenda. */
+  ai_suggestion?: {
+    model: string;
+    prompt_version: string;
+    agenda: Record<string, unknown>;
+  };
 };
 
 /* --- endpoints --- */

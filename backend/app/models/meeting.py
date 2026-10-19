@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, Integer, String, Text, func
+from sqlalchemy import JSON, CheckConstraint, DateTime, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -28,6 +29,11 @@ class Meeting(Base):
     attendee_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     kind: Mapped[str] = mapped_column(String(10), nullable=False, server_default="meeting")
     agenda: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # What the model suggested for this agenda (Lab 6): {agenda, model, prompt_version}.
+    # The difference between it and `agenda` is the quality signal; see the ADR.
+    ai_suggestion: Mapped[dict | None] = mapped_column(
+        JSON().with_variant(JSONB(), "postgresql"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

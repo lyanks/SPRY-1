@@ -124,6 +124,18 @@ else
   log "no ${AUTH_STACK} stack - building without sign-in"
 fi
 
+# --- paste an agenda (Lab 6) ------------------------------------------------
+
+# If the AI stack exists (make deploy-ai), the build is told where the parser is.
+AI_STACK="${AI_STACK_NAME:-${PROJECT_NAME}-ai}"
+AI_ENV=()
+PARSER_URL="$(aws cloudformation describe-stacks --stack-name "${AI_STACK}" \
+  --query "Stacks[0].Outputs[?OutputKey=='ParserUrl'].OutputValue" --output text 2>/dev/null || true)"
+if [[ -n "${PARSER_URL}" && "${PARSER_URL}" != "None" ]]; then
+  AI_ENV=("NEXT_PUBLIC_PARSER_URL=${PARSER_URL%/}")
+  log "paste an agenda: building against ${AI_STACK}"
+fi
+
 log "installing dependencies"
 (cd "${APP}" && "${PM[@]}" install --frozen-lockfile)
 
@@ -132,6 +144,7 @@ rm -rf "${APP}/out"
 (cd "${APP}" && env NEXT_OUTPUT=export \
   NEXT_PUBLIC_API_URL="${API_URL}" \
   ${AUTH_ENV[@]+"${AUTH_ENV[@]}"} \
+  ${AI_ENV[@]+"${AI_ENV[@]}"} \
   "${PM[@]}" build)
 [[ -f "${APP}/out/index.html" ]] || die "the export produced no out/index.html"
 

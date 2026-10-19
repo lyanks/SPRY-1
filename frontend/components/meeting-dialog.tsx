@@ -1,11 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { DeleteMeetingButton } from "@/components/delete-meeting-button";
+import { PasteAgenda } from "@/components/paste-agenda";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +21,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { meetingInputSchema, type Meeting, type MeetingInput } from "@/lib/api";
 import { useCreateMeeting, useUpdateMeeting } from "@/lib/queries";
+import {
+  parserEnabled,
+  suggestionToForm,
+  type ParseResponse,
+  type SuggestedField,
+} from "@/lib/parser";
 import { fromInputValue, nextQuarterInput, toInputValue } from "@/lib/time";
 
 type Props = {
@@ -59,10 +66,43 @@ export function MeetingDialog({ open, onOpenChange, meeting }: Props) {
   });
   const { errors } = form.formState;
 
+  // Paste an agenda (Lab 6): what the model suggested, and which fields still
+  // show its suggestion untouched.
+  const [suggestion, setSuggestion] = useState<ParseResponse | null>(null);
+  const [suggested, setSuggested] = useState<SuggestedField[]>([]);
+
   // Re-seed the form each time the dialog opens for a different meeting.
   useEffect(() => {
-    if (open) form.reset(valuesFor(meeting));
+    if (!open) return;
+    form.reset(valuesFor(meeting));
+    // Forget the last suggestion when the dialog closes or switches meeting.
+    return () => {
+      setSuggestion(null);
+      setSuggested([]);
+    };
   }, [open, meeting, form]);
+
+  // The badge goes away as soon as the person edits that field themselves.
+  const register = (name: SuggestedField) =>
+    form.register(name, {
+      onChange: () => setSuggested((prev) => prev.filter((f) => f !== name)),
+    });
+
+  function applySuggestion(result: ParseResponse) {
+    const { values, suggested: fields } = suggestionToForm(
+      result.agenda,
+      form.getValues(),
+    );
+    for (const [name, value] of Object.entries(values)) {
+      form.setValue(name as keyof MeetingInput, value as never, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+    setSuggestion(result);
+    setSuggested(fields);
+    toast.success("Form pre-filled. Check it, then save.");
+  }
 
   async function onSubmit(values: MeetingInput) {
     const payload = {
@@ -71,6 +111,15 @@ export function MeetingDialog({ open, onOpenChange, meeting }: Props) {
       ends_at: fromInputValue(values.ends_at),
       attendee_count: values.attendee_count,
       agenda: values.agenda.trim() === "" ? null : values.agenda.trim(),
+      // What the model suggested goes along, so the API can keep it beside what
+      // the person saved: every correction is feedback.
+      ...(suggestion && {
+        ai_suggestion: {
+          model: suggestion.model,
+          prompt_version: suggestion.prompt_version,
+          agenda: suggestion.agenda,
+        },
+      }),
     };
     try {
       if (meeting) {
@@ -105,37 +154,47 @@ export function MeetingDialog({ open, onOpenChange, meeting }: Props) {
           className="space-y-4"
           noValidate
         >
+          {parserEnabled && (
+            <PasteAgenda onParsed={applySuggestion} disabled={saving} />
+          )}
+
           <div className="space-y-1.5">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">
+              Title <Suggested show={suggested.includes("title")} />
+            </Label>
             <Input
               id="title"
               placeholder="Weekly product sync"
               aria-invalid={!!errors.title}
-              {...form.register("title")}
+              {...register("title")}
             />
             {errors.title && <FieldError>{errors.title.message}</FieldError>}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="starts_at">Starts</Label>
+              <Label htmlFor="starts_at">
+                Starts <Suggested show={suggested.includes("starts_at")} />
+              </Label>
               <Input
                 id="starts_at"
                 type="datetime-local"
                 aria-invalid={!!errors.starts_at}
-                {...form.register("starts_at")}
+                {...register("starts_at")}
               />
               {errors.starts_at && (
                 <FieldError>{errors.starts_at.message}</FieldError>
               )}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="ends_at">Ends</Label>
+              <Label htmlFor="ends_at">
+                Ends <Suggested show={suggested.includes("ends_at")} />
+              </Label>
               <Input
                 id="ends_at"
                 type="datetime-local"
                 aria-invalid={!!errors.ends_at}
-                {...form.register("ends_at")}
+                {...register("ends_at")}
               />
               {errors.ends_at && (
                 <FieldError>{errors.ends_at.message}</FieldError>
@@ -163,13 +222,15 @@ export function MeetingDialog({ open, onOpenChange, meeting }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="agenda">Agenda</Label>
+            <Label htmlFor="agenda">
+              Agenda <Suggested show={suggested.includes("agenda")} />
+            </Label>
             <Textarea
               id="agenda"
               rows={4}
               placeholder="What should this meeting decide or produce?"
               aria-invalid={!!errors.agenda}
-              {...form.register("agenda")}
+              {...register("agenda")}
             />
             {errors.agenda && <FieldError>{errors.agenda.message}</FieldError>}
           </div>
@@ -197,6 +258,16 @@ export function MeetingDialog({ open, onOpenChange, meeting }: Props) {
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Marks a field the model filled in, until the person touches it. */
+function Suggested({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <span className="ml-1 rounded-full bg-violet-soft/20 px-2 py-0.5 text-[0.65rem] font-semibold text-ink">
+      suggested
+    </span>
   );
 }
 

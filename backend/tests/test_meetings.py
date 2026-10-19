@@ -99,3 +99,38 @@ async def test_delete(client: AsyncClient):
     assert (await client.get(f"/api/meetings/{gone['id']}")).status_code == 404
     assert [m["id"] for m in (await client.get("/api/meetings")).json()] == [keep["id"]]
     assert (await client.delete(f"/api/meetings/{gone['id']}")).status_code == 404
+
+
+SUGGESTION = {
+    "model": "anthropic.claude-opus-5-5",
+    "prompt_version": "agenda-v1",
+    "agenda": {"title": "Pricing sync", "items": [{"topic": "Pro plan", "owner": "Olena"}]},
+}
+
+
+async def test_ai_suggestion_is_stored_with_the_agenda(client: AsyncClient):
+    created = await _create(client, agenda="1. Pro plan", ai_suggestion=SUGGESTION)
+    assert created["has_agenda"] is True
+    patched = await client.patch(
+        f"/api/meetings/{created['id']}",
+        json={"agenda": "1. Pro plan (Olena)", "ai_suggestion": SUGGESTION},
+    )
+    assert patched.status_code == 200, patched.text
+
+
+async def test_ai_suggestion_is_validated(client: AsyncClient):
+    bad = {**SUGGESTION, "model": ""}
+    res = await client.post("/api/meetings", json={**BASE, "ai_suggestion": bad})
+    assert res.status_code == 422
+    huge = {**SUGGESTION, "agenda": {"x": "y" * 25_000}}
+    res = await client.post("/api/meetings", json={**BASE, "ai_suggestion": huge})
+    assert res.status_code == 422
+
+
+async def test_ai_suggestion_lands_in_the_database(client: AsyncClient, session):
+    from app.models.meeting import Meeting
+
+    created = await _create(client, agenda="final text", ai_suggestion=SUGGESTION)
+    row = await session.get(Meeting, created["id"])
+    assert row.ai_suggestion == SUGGESTION
+    assert row.agenda == "final text"

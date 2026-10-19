@@ -45,6 +45,9 @@ async def create_meeting(session: AsyncSession, owner_id: str, payload: MeetingC
         attendee_count=payload.attendee_count,
         kind=kind,
         agenda=payload.agenda,
+        ai_suggestion=(
+            payload.ai_suggestion.model_dump(mode="json") if payload.ai_suggestion else None
+        ),
     )
     session.add(meeting)
     await session.flush()
