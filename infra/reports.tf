@@ -296,9 +296,10 @@ resource "aws_iam_role_policy" "mailer_read_and_send" {
 # The code used to sit inside the template (ZipFile). Now it is a file next to
 # the Terraform, zipped at plan time.
 data "archive_file" "mailer" {
-  type        = "zip"
-  source_file = "${path.module}/lambda/mailer/index.py"
-  output_path = "${path.module}/.build/mailer.zip"
+  type             = "zip"
+  source_file      = "${path.module}/lambda/mailer/index.py"
+  output_path      = "${path.module}/.build/mailer.zip"
+  output_file_mode = "0644"
 }
 
 # Not in a VPC: it needs the internet to reach SES, and never touches the
