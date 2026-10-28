@@ -1,6 +1,6 @@
 # Lab 7 - From CloudFormation to Terraform
 
-Commit / pull request: https://github.com/lyanks/SPRY-1/commit/51f9fca9ad55d092b01b510d73a83107b22b027b
+Commit / pull request: https://github.com/lyanks/SPRY-1/commit/fb2168cc1ba1c68f3f8ed94864869c36ccc2b718
 
 ## Hand-in checklist
 
