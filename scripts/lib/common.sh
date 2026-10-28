@@ -34,6 +34,20 @@ load_env() {
   export AWS_DEFAULT_REGION="${AWS_REGION}"
 }
 
+# A value from the Terraform outputs (infra/outputs.tf). The environment wins, so CI
+# can set e.g. COGNITO_CLIENT_ID as a repository variable instead of holding a
+# Terraform token; prints nothing when neither is available.
+#   tf_output <output name> [ENV_VAR]
+tf_output() {
+  local env_name="${2:-}"
+  if [[ -n "${env_name}" && -n "${!env_name:-}" ]]; then
+    printf '%s' "${!env_name}"
+    return 0
+  fi
+  command -v terraform >/dev/null 2>&1 || return 0
+  terraform -chdir="${ROOT}/infra" output -raw "$1" 2>/dev/null || true
+}
+
 need() {
   local tool
   for tool in "$@"; do

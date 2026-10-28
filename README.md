@@ -68,6 +68,29 @@ Rollback: `make rollback-backend IMAGE_TAG=<older commit sha>` (the image is sti
 Logs: `make logs-backend`. Cost control: `make destroy-frontend destroy-backend` when you're done —
 the RDS instance and the ALB bill by the hour.
 
+## Infrastructure as code (Lab 7)
+
+The Cognito pool (Lab 4), the weekly report (Lab 5) and the agenda parser (Lab 6) are
+Terraform in `infra/`: `auth.tf`, `reports.tf`, `ai.tf`, with `variables.tf`, `outputs.tf`
+and `versions.tf`. (The backend, database and site of the course template are still
+CloudFormation: `backend.yaml`, `frontend.yaml`, `github-oidc.yaml`.) The state lives in
+the HCP Terraform workspace `spry-dev`; **nothing applies from a laptop**.
+
+| I want to | Do |
+|---|---|
+| change infrastructure | edit `infra/*.tf`, open a pull request, read the plan in the check, merge: HCP Terraform applies |
+| see what would change | `make infra-plan` (read-only) |
+| check syntax | `make infra-fmt infra-validate` |
+| read a value | `make infra-output` or `terraform -chdir=infra output -raw parser_url` |
+| ship a new Lambda image | `make push-image`, then set `image_uri` in the workspace |
+
+Variables: non-secret values are in `infra/terraform.tfvars`; `google_client_secret` is a
+sensitive variable of the workspace. One-time setup: put your HCP organization's name in `infra/versions.tf`, run `terraform login`, then `make infra-init`.
+CI (`.github/workflows/ci.yml`) cannot read Terraform outputs without a token, so `make deploy-frontend` and
+`make deploy-backend` also accept `COGNITO_AUTHORITY`, `COGNITO_CLIENT_ID`, `COGNITO_DOMAIN`, `PARSER_URL`,
+`COGNITO_USER_POOL_ID` from the environment (set them as repository variables).
+Decision record: `docs/adr/0007-terraform.md`.
+
 ## Sign-in with Cognito (Lab 4)
 
 People sign in with an email and a password or with Google. The browser talks
@@ -82,18 +105,16 @@ signed-in email. Without the Cognito stack the site builds and runs as before.
      In "Testing" only listed test users can sign in.
    - Clients -> Create client -> **Web application**. `make auth-uris` prints the
      two values it needs (they point at Cognito, not at the site).
-   - Put the client ID and secret in `.env` as `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
-2. `make deploy-frontend` (once, so the site's URL exists), then `make deploy-auth`
-   (creates `infra/auth.yaml`: user pool, Google provider, public app client, domain,
-   managed-login branding), then `make deploy-frontend` again - it reads the stack's
+   - Set the client ID as `google_client_id` and the secret as the **sensitive** variable
+     `google_client_secret` in the HCP Terraform workspace (see "Infrastructure" below).
+2. The user pool, Google provider, public app client, domain and managed-login branding are
+   `infra/auth.tf`. After the workspace applies, `make deploy-frontend` reads the Terraform
    outputs and compiles them into the build.
-3. `make deploy-backend` once more: it reads the auth stack and tells the API which
+3. `make deploy-backend` once more: it reads the same outputs and tells the API which
    Cognito pool and app client to trust. Until then the API answers calendar requests
    with 401/503 - it fails closed.
 4. Open `<site>/login/`. Try it in a private window, once with an email and password
    (Cognito mails a confirmation code) and once with **Continue with Google**.
-
-`make destroy-auth` removes the stack and its users.
 
 ### Who sees what
 

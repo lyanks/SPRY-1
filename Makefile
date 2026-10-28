@@ -1,6 +1,6 @@
 COMPOSE := docker compose
 
-.PHONY: help up down build logs ps migrate revision test test-backend test-frontend lint fmt clean shell-backend shell-db deploy-backend destroy-backend logs-backend migrate-backend cert domain deploy-frontend destroy-frontend github-role auth-uris deploy-auth destroy-auth deploy-reports report-now destroy-reports llm-hello parse deploy-ai ai-logs destroy-ai
+.PHONY: help up down build logs ps migrate revision test test-backend test-frontend lint fmt clean shell-backend shell-db deploy-backend destroy-backend logs-backend migrate-backend cert domain deploy-frontend destroy-frontend github-role auth-uris report-now llm-hello parse ai-logs ai-budget push-image infra-init infra-fmt infra-validate infra-plan infra-output tf-vars tf-imports cfn-retain cfn-delete
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -85,31 +85,50 @@ github-role: ## Create the IAM role GitHub Actions assumes to deploy (OIDC, no k
 auth-uris:
 	./scripts/auth.sh uris
 
-deploy-auth:
-	./scripts/auth.sh deploy
-
-destroy-auth:
-	./scripts/auth.sh destroy
-deploy-reports: ## Lab 5: deploy the weekly-report stack (needs REPORT_EMAIL in .env)
-	./scripts/reports.sh deploy
-
 report-now: ## Lab 5: build a report on demand: make report-now WEEK=2026-W40
 	./scripts/reports.sh now $(WEEK)
 
-destroy-reports: ## Lab 5: delete the weekly-report stack
-	./scripts/reports.sh destroy
-
-llm-hello:
+llm-hello: ## Lab 6: first call to Claude on Bedrock, from your laptop (needs AWS credentials)
 	cd backend && uv run python -m app.ai.hello
 
-parse:
+parse: ## Lab 6: run the parser from your laptop: make parse TEXT="Mon 10:00 sync, 30 min. 1) pricing"
 	cd backend && uv run python -m app.ai.cli "$(TEXT)"
 
-deploy-ai:
-	./scripts/ai.sh deploy
-
-ai-logs:
+ai-logs: ## Lab 6: the parser's log lines from the last hour
 	./scripts/ai.sh logs
 
-destroy-ai:
-	./scripts/ai.sh destroy
+# ---- Lab 7: the infrastructure is Terraform (infra/*.tf), applied by HCP Terraform ----
+# There is no `terraform apply` here on purpose: changes reach AWS by a pull request and a merge.
+
+push-image: ## Build the Lambda image, push it to ECR, print its URI (set it as image_uri in the workspace)
+	./scripts/push-image.sh
+
+infra-init: ## Terraform: download providers, connect to the HCP Terraform workspace
+	terraform -chdir=infra init
+
+infra-fmt: ## Terraform: format the files
+	terraform -chdir=infra fmt
+
+infra-validate: ## Terraform: check syntax, types and references (no AWS calls)
+	terraform -chdir=infra validate
+
+infra-plan: ## Terraform: show what would change (read-only)
+	terraform -chdir=infra plan
+
+infra-output: ## Terraform: print all outputs
+	terraform -chdir=infra output
+
+tf-vars: ## Lab 7 Step 3: write infra/terraform.tfvars from the old stacks' parameters
+	./scripts/tf-vars.sh
+
+tf-imports: ## Lab 7 Step 3b: write infra/imports.tf from what exists in AWS
+	./scripts/tf-imports.sh
+
+cfn-retain: ## Lab 7 Step 3a: redeploy the old stacks with DeletionPolicy: Retain
+	./scripts/cfn-release.sh retain
+
+cfn-delete: ## Lab 7 Step 3a: delete the old stacks; their resources stay (checks Retain first)
+	./scripts/cfn-release.sh delete
+
+ai-budget: ## Create the $5 monthly AWS Budgets alarm
+	./scripts/ai.sh budget

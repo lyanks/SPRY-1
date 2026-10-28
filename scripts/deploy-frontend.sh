@@ -102,38 +102,30 @@ SITE_URL="$(outputs SiteUrl)"
 
 # --- build ------------------------------------------------------------------
 
-# --- sign-in (Lab 4) --------------------------------------------------------
+# --- sign-in (Lab 4) and the parser (Lab 6) ---------------------------------
 
-# If the Cognito stack exists (make deploy-auth), the build is told where it is.
-# These are public values (a pool id, a public client id, a domain), but like
-# the API URL they are compiled in, so redeploy the frontend after changing them.
-AUTH_STACK="${AUTH_STACK_NAME:-${PROJECT_NAME}-auth}"
+# Where Cognito and the parser are comes from the Terraform outputs (Lab 7), or
+# from the environment (CI sets COGNITO_AUTHORITY, COGNITO_CLIENT_ID, COGNITO_DOMAIN
+# and PARSER_URL as repository variables). These are public values, but like the
+# API URL they are compiled in, so redeploy the frontend after changing them.
 AUTH_ENV=()
-if aws cloudformation describe-stacks --stack-name "${AUTH_STACK}" >/dev/null 2>&1; then
-  auth_output() {
-    aws cloudformation describe-stacks --stack-name "${AUTH_STACK}" \
-      --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text
-  }
+AUTHORITY="$(tf_output authority COGNITO_AUTHORITY)"
+if [[ -n "${AUTHORITY}" ]]; then
   AUTH_ENV=(
-    "NEXT_PUBLIC_COGNITO_AUTHORITY=$(auth_output Authority)"
-    "NEXT_PUBLIC_COGNITO_CLIENT_ID=$(auth_output ClientId)"
-    "NEXT_PUBLIC_COGNITO_DOMAIN=$(auth_output CognitoDomain)"
+    "NEXT_PUBLIC_COGNITO_AUTHORITY=${AUTHORITY}"
+    "NEXT_PUBLIC_COGNITO_CLIENT_ID=$(tf_output client_id COGNITO_CLIENT_ID)"
+    "NEXT_PUBLIC_COGNITO_DOMAIN=$(tf_output cognito_domain COGNITO_DOMAIN)"
   )
-  log "sign-in: building against ${AUTH_STACK}"
+  log "sign-in: building against the Terraform outputs"
 else
-  log "no ${AUTH_STACK} stack - building without sign-in"
+  log "no Cognito outputs - building without sign-in"
 fi
 
-# --- paste an agenda (Lab 6) ------------------------------------------------
-
-# If the AI stack exists (make deploy-ai), the build is told where the parser is.
-AI_STACK="${AI_STACK_NAME:-${PROJECT_NAME}-ai}"
 AI_ENV=()
-PARSER_URL="$(aws cloudformation describe-stacks --stack-name "${AI_STACK}" \
-  --query "Stacks[0].Outputs[?OutputKey=='ParserUrl'].OutputValue" --output text 2>/dev/null || true)"
-if [[ -n "${PARSER_URL}" && "${PARSER_URL}" != "None" ]]; then
+PARSER_URL="$(tf_output parser_url PARSER_URL)"
+if [[ -n "${PARSER_URL}" ]]; then
   AI_ENV=("NEXT_PUBLIC_PARSER_URL=${PARSER_URL%/}")
-  log "paste an agenda: building against ${AI_STACK}"
+  log "paste an agenda: building against the parser's URL"
 fi
 
 log "installing dependencies"
