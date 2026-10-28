@@ -1,6 +1,6 @@
 # Lab 6 - Paste an agenda (Claude on Amazon Bedrock)
 
-Commit: https://github.com/lyanks/SPRY-1/commit/aa2b557d095013daa26803d51ebcfc5b311e7707
+Commit: https://github.com/lyanks/SPRY-1/commit/fb2168cc1ba1c68f3f8ed94864869c36ccc2b718
 (branch `lab6`: the parser, `infra/ai.yml`, the **Paste an agenda** screen and the ADR).
 
 ## Hand-in checklist
