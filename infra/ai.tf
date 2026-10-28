@@ -43,6 +43,10 @@ resource "aws_iam_role_policy" "parser_call_claude" {
 resource "aws_cloudwatch_log_group" "parser" {
   name              = "/aws/lambda/${var.project_name}-agenda-parser"
   retention_in_days = 30
+
+  tags = {
+    Lab = "7"
+  }
 }
 
 # No vpc_config: the function needs no database, and outside a VPC it reaches
