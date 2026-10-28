@@ -27,7 +27,7 @@ DEFAULT_MODEL = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
 DEFAULT_REGION = "us-east-1"
 MAX_TEXT_CHARS = 10_000
 # One model call may take this long. The SDK retries a throttled or unavailable answer twice,
-# so the Lambda's own timeout (infra/ai.yml) must be well above it.
+# so the Lambda's own timeout (infra/ai.tf) must be well above it.
 REQUEST_TIMEOUT_S = 20.0
 
 # Dollars per million tokens (input, output): Anthropic's list prices from the

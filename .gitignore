@@ -28,3 +28,13 @@ out/
 
 # --- docker ---
 pgdata/
+
+# --- terraform (Lab 7) ---
+# .terraform.lock.hcl IS committed (it pins provider versions, like uv.lock).
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+infra/.build/

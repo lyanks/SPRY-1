@@ -53,6 +53,8 @@ Parameters:
 Resources:
   ParserRole:
     Type: AWS::IAM::Role
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       RoleName: !Sub "${ProjectName}-agenda-parser"
       AssumeRolePolicyDocument:
@@ -82,6 +84,8 @@ Resources:
 
   ParserLogs:
     Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       LogGroupName: !Sub "/aws/lambda/${ProjectName}-agenda-parser"
       RetentionInDays: 30
@@ -90,6 +94,8 @@ Resources:
   # Bedrock and Cognito's keys over the internet with no NAT and no endpoint.
   ParserFunction:
     Type: AWS::Lambda::Function
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     DependsOn: ParserLogs
     Properties:
       FunctionName: !Sub "${ProjectName}-agenda-parser"
@@ -115,6 +121,8 @@ Resources:
 
   ParserUrl:
     Type: AWS::Lambda::Url
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TargetFunctionArn: !GetAtt ParserFunction.Arn
       AuthType: NONE # the handler verifies the Cognito token itself
@@ -127,6 +135,8 @@ Resources:
   # A public function URL needs both statements, or callers get 403.
   UrlPermission:
     Type: AWS::Lambda::Permission
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       FunctionName: !Ref ParserFunction
       Action: lambda:InvokeFunctionUrl
@@ -135,6 +145,8 @@ Resources:
 
   UrlInvokePermission:
     Type: AWS::Lambda::Permission
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       FunctionName: !Ref ParserFunction
       Action: lambda:InvokeFunction

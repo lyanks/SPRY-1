@@ -6,7 +6,7 @@ person checks the pre-filled form and saves it through the normal API.
 
 Every call costs money, so it is authenticated: a missing or invalid Cognito
 access token is a 401, and text over 10,000 characters is a 413 before the model
-is called. CORS is answered by the function URL itself (infra/ai.yml).
+is called. CORS is answered by the function URL itself (infra/ai.tf).
 """
 
 from __future__ import annotations

@@ -32,6 +32,8 @@ Parameters:
 Resources:
   UserPool:
     Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       UserPoolName: !Sub "${ProjectName}-users"
       # Managed login needs Essentials; the first 10,000 monthly users are free.
@@ -60,6 +62,8 @@ Resources:
 
   GoogleProvider:
     Type: AWS::Cognito::UserPoolIdentityProvider
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       UserPoolId: !Ref UserPool
       ProviderName: Google
@@ -78,6 +82,8 @@ Resources:
   # (done by the OIDC library) protects the code exchange instead.
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     # A client that names a provider which does not exist yet fails to create.
     DependsOn: GoogleProvider
     Properties:
@@ -106,6 +112,8 @@ Resources:
   # before the first deploy - which Google's console needs (see `make auth-uris`).
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Domain: !Sub "${ProjectName}-${AWS::AccountId}"
       UserPoolId: !Ref UserPool
@@ -114,6 +122,8 @@ Resources:
   # Without branding, a version 2 domain has no sign-in page to show.
   ManagedLoginBranding:
     Type: AWS::Cognito::ManagedLoginBranding
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     DependsOn: UserPoolDomain
     Properties:
       UserPoolId: !Ref UserPool
