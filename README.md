@@ -134,3 +134,23 @@ signed-in email. Without the Cognito stack the site builds and runs as before.
   one `dev-user`, so the app works as before. In production, an API with no Cognito
   configured refuses requests (503).
 
+## Google Cloud (Lab 9)
+
+The core (frontend, API, database) also runs on Google Cloud: Firebase Hosting for the static
+export, Cloud Run for the API (the same `runtime` image), Cloud SQL for PostgreSQL, Secret Manager for
+the password, Artifact Registry for the image. Sign-in (Cognito), the weekly report and the agenda parser
+stay on AWS. The Terraform is in `gcp/` with its own state (the HCP Terraform workspace `spry-gcp`, Local
+execution). Decisions: [ADR 0008](docs/adr/0008-google-cloud.md). Costs and the demos: [LAB9.md](LAB9.md).
+
+```bash
+# once: a project with billing, gcloud auth login, gcloud auth application-default login,
+#       GCP_PROJECT_ID=<id> in .env, npx firebase-tools@14 login
+bash scripts/gcp.sh check
+bash scripts/gcp.sh up          # APIs, image, Cloud SQL + Cloud Run, frontend, smoke test
+bash scripts/gcp.sh db-stop     # stop the database (it never pauses by itself; the disk still bills)
+bash scripts/gcp.sh db-start
+bash scripts/gcp.sh destroy     # delete everything this lab created
+```
+
+What still runs on AWS: Cognito, the weekly report (Lambda, SES, S3) and the agenda parser (Bedrock).
+The AWS stacks and the Google Cloud ones do not depend on each other; `docker compose up` is unchanged.
