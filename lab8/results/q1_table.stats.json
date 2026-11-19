@@ -1,0 +1,7 @@
+{
+  "query": "q1_table",
+  "data_scanned_bytes": 0,
+  "data_scanned_mb": 0.0,
+  "engine_ms": 402,
+  "total_ms": 522
+}

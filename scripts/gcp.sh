@@ -116,20 +116,24 @@ case "${1:-}" in
     [[ -f frontend/out/index.html ]] || die "the export produced no frontend/out/index.html"
     # the rewrite regions in firebase.json must match the region of the service
     sed -i.bak "s/\"region\": \"[a-z0-9-]*\"/\"region\": \"${REGION}\"/g" "${GCP}/firebase/firebase.json" && rm -f "${GCP}/firebase/firebase.json.bak"
-    if ! fb hosting:sites:list --project "${PROJECT}" 2>/dev/null | grep -q "${PROJECT}"; then
-      log "adding Firebase to the project and creating the default Hosting site"
+    # Firebase deploys only a folder inside its own project directory: copy the export there.
+    rm -rf "${GCP}/firebase/public"
+    cp -R frontend/out "${GCP}/firebase/public"
+    # Deploy first; only if that fails (no Hosting site yet) add Firebase and create the site, then retry.
+    if ! fb deploy --only hosting --project "${PROJECT}"; then
+      log "deploy failed: adding Firebase to the project and creating the default Hosting site, then retrying"
       fb projects:addfirebase "${PROJECT}" || true
       fb hosting:sites:create "${PROJECT}" --project "${PROJECT}" || true
+      fb deploy --only hosting --project "${PROJECT}"
     fi
-    fb deploy --only hosting --project "${PROJECT}"
     echo; echo "  site  https://${PROJECT}.web.app"
     ;;
   smoke)
     API="$(tf_out api_url)"; SITE="https://${PROJECT}.web.app"
     [[ -n "${API}" ]] || die "no API yet"
     log "GET ${API}/health"; curl -fsS "${API}/health"; echo
-    log "GET ${API}/health/ready   (a SELECT 1 on Cloud SQL)"; curl -fsS "${API}/health/ready"; echo
-    log "GET ${SITE}/health/ready   (through Firebase Hosting -> Cloud Run)"; curl -fsS "${SITE}/health/ready"; echo
+    log "GET ${API}/api/health/ready   (a SELECT 1 on Cloud SQL)"; curl -fsS "${API}/api/health/ready"; echo
+    log "GET ${SITE}/api/health/ready   (through Firebase Hosting -> Cloud Run)"; curl -fsS "${SITE}/api/health/ready"; echo
     log "POST ${SITE}/api/meetings  (writes a row)"
     curl -fsS -X POST "${SITE}/api/meetings" -H 'Content-Type: application/json' \
       -d '{"title":"Lab 9 demo","starts_at":"2026-11-16T10:00:00Z","ends_at":"2026-11-16T10:30:00Z","attendee_count":3,"agenda":null}' || warn "POST failed (a signed-in production API needs a token)"

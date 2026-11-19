@@ -1,0 +1,7 @@
+{
+  "query": "q4_failure_rate-parquet",
+  "data_scanned_bytes": 667990,
+  "data_scanned_mb": 0.64,
+  "engine_ms": 733,
+  "total_ms": 866
+}

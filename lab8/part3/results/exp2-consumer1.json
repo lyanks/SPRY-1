@@ -1,0 +1,941 @@
+{
+  "consumed": 2575,
+  "duplicates": 55,
+  "late": 42,
+  "late_terminal": 19,
+  "terminal_counted": 824,
+  "alerts": 12,
+  "seen_set_size": 2520,
+  "windows_closed": 103,
+  "lateness": 120,
+  "group": "g-exp2-1794074681",
+  "windows": [
+    {
+      "window": "16:59:00",
+      "method": "card",
+      "payments": 2,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "16:59:00",
+      "method": "google_pay",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:00:00",
+      "method": "apple_pay",
+      "payments": 13,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:00:00",
+      "method": "card",
+      "payments": 21,
+      "failed": 3,
+      "share": 14.3,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:00:00",
+      "method": "google_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:00:00",
+      "method": "qr",
+      "payments": 3,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:01:00",
+      "method": "apple_pay",
+      "payments": 8,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:01:00",
+      "method": "card",
+      "payments": 21,
+      "failed": 2,
+      "share": 9.5,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:01:00",
+      "method": "google_pay",
+      "payments": 7,
+      "failed": 1,
+      "share": 14.3,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:01:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:02:00",
+      "method": "apple_pay",
+      "payments": 3,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:02:00",
+      "method": "card",
+      "payments": 12,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:02:00",
+      "method": "google_pay",
+      "payments": 3,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:02:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:03:00",
+      "method": "apple_pay",
+      "payments": 3,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:03:00",
+      "method": "card",
+      "payments": 11,
+      "failed": 2,
+      "share": 18.2,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:03:00",
+      "method": "google_pay",
+      "payments": 2,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:03:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:04:00",
+      "method": "apple_pay",
+      "payments": 8,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:04:00",
+      "method": "card",
+      "payments": 12,
+      "failed": 1,
+      "share": 8.3,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:04:00",
+      "method": "google_pay",
+      "payments": 6,
+      "failed": 1,
+      "share": 16.7,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:05:00",
+      "method": "apple_pay",
+      "payments": 10,
+      "failed": 2,
+      "share": 20.0,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:05:00",
+      "method": "card",
+      "payments": 13,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:05:00",
+      "method": "google_pay",
+      "payments": 3,
+      "failed": 2,
+      "share": 66.7,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:05:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:06:00",
+      "method": "apple_pay",
+      "payments": 7,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:06:00",
+      "method": "card",
+      "payments": 14,
+      "failed": 1,
+      "share": 7.1,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:06:00",
+      "method": "google_pay",
+      "payments": 5,
+      "failed": 1,
+      "share": 20.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:07:00",
+      "method": "apple_pay",
+      "payments": 8,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:07:00",
+      "method": "card",
+      "payments": 15,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:07:00",
+      "method": "google_pay",
+      "payments": 5,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:08:00",
+      "method": "apple_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:08:00",
+      "method": "card",
+      "payments": 24,
+      "failed": 2,
+      "share": 8.3,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:08:00",
+      "method": "google_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:09:00",
+      "method": "apple_pay",
+      "payments": 9,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:09:00",
+      "method": "card",
+      "payments": 17,
+      "failed": 2,
+      "share": 11.8,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:09:00",
+      "method": "google_pay",
+      "payments": 5,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:10:00",
+      "method": "apple_pay",
+      "payments": 3,
+      "failed": 1,
+      "share": 33.3,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:10:00",
+      "method": "card",
+      "payments": 20,
+      "failed": 3,
+      "share": 15.0,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:10:00",
+      "method": "google_pay",
+      "payments": 5,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:11:00",
+      "method": "apple_pay",
+      "payments": 9,
+      "failed": 1,
+      "share": 11.1,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:11:00",
+      "method": "card",
+      "payments": 17,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:11:00",
+      "method": "google_pay",
+      "payments": 4,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:11:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:12:00",
+      "method": "apple_pay",
+      "payments": 5,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:12:00",
+      "method": "card",
+      "payments": 10,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:12:00",
+      "method": "google_pay",
+      "payments": 5,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:13:00",
+      "method": "apple_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:13:00",
+      "method": "card",
+      "payments": 16,
+      "failed": 1,
+      "share": 6.2,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:13:00",
+      "method": "google_pay",
+      "payments": 10,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:13:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:14:00",
+      "method": "apple_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:14:00",
+      "method": "card",
+      "payments": 19,
+      "failed": 3,
+      "share": 15.8,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:14:00",
+      "method": "google_pay",
+      "payments": 4,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:15:00",
+      "method": "apple_pay",
+      "payments": 4,
+      "failed": 1,
+      "share": 25.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:15:00",
+      "method": "card",
+      "payments": 14,
+      "failed": 1,
+      "share": 7.1,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:15:00",
+      "method": "google_pay",
+      "payments": 9,
+      "failed": 1,
+      "share": 11.1,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:16:00",
+      "method": "apple_pay",
+      "payments": 5,
+      "failed": 1,
+      "share": 20.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:16:00",
+      "method": "card",
+      "payments": 18,
+      "failed": 1,
+      "share": 5.6,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:16:00",
+      "method": "google_pay",
+      "payments": 9,
+      "failed": 2,
+      "share": 22.2,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:17:00",
+      "method": "apple_pay",
+      "payments": 8,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:17:00",
+      "method": "card",
+      "payments": 14,
+      "failed": 2,
+      "share": 14.3,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:17:00",
+      "method": "google_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:18:00",
+      "method": "apple_pay",
+      "payments": 8,
+      "failed": 1,
+      "share": 12.5,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:18:00",
+      "method": "card",
+      "payments": 15,
+      "failed": 2,
+      "share": 13.3,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:18:00",
+      "method": "google_pay",
+      "payments": 3,
+      "failed": 1,
+      "share": 33.3,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:19:00",
+      "method": "apple_pay",
+      "payments": 7,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:19:00",
+      "method": "card",
+      "payments": 11,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:19:00",
+      "method": "google_pay",
+      "payments": 11,
+      "failed": 2,
+      "share": 18.2,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:20:00",
+      "method": "apple_pay",
+      "payments": 7,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:20:00",
+      "method": "card",
+      "payments": 13,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:20:00",
+      "method": "google_pay",
+      "payments": 4,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:21:00",
+      "method": "apple_pay",
+      "payments": 4,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:21:00",
+      "method": "card",
+      "payments": 12,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:21:00",
+      "method": "google_pay",
+      "payments": 3,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:21:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:22:00",
+      "method": "apple_pay",
+      "payments": 13,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:22:00",
+      "method": "card",
+      "payments": 14,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:22:00",
+      "method": "google_pay",
+      "payments": 3,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:23:00",
+      "method": "apple_pay",
+      "payments": 10,
+      "failed": 1,
+      "share": 10.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:23:00",
+      "method": "card",
+      "payments": 14,
+      "failed": 3,
+      "share": 21.4,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:23:00",
+      "method": "google_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:24:00",
+      "method": "apple_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:24:00",
+      "method": "card",
+      "payments": 17,
+      "failed": 1,
+      "share": 5.9,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:24:00",
+      "method": "google_pay",
+      "payments": 4,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:24:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:25:00",
+      "method": "apple_pay",
+      "payments": 7,
+      "failed": 1,
+      "share": 14.3,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:25:00",
+      "method": "card",
+      "payments": 17,
+      "failed": 3,
+      "share": 17.6,
+      "alert": true,
+      "final_flush": false
+    },
+    {
+      "window": "17:25:00",
+      "method": "google_pay",
+      "payments": 4,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:25:00",
+      "method": "qr",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:26:00",
+      "method": "apple_pay",
+      "payments": 1,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:26:00",
+      "method": "card",
+      "payments": 14,
+      "failed": 1,
+      "share": 7.1,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:26:00",
+      "method": "google_pay",
+      "payments": 5,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": false
+    },
+    {
+      "window": "17:27:00",
+      "method": "apple_pay",
+      "payments": 4,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:27:00",
+      "method": "card",
+      "payments": 11,
+      "failed": 1,
+      "share": 9.1,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:27:00",
+      "method": "google_pay",
+      "payments": 7,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:27:00",
+      "method": "qr",
+      "payments": 2,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:28:00",
+      "method": "apple_pay",
+      "payments": 8,
+      "failed": 1,
+      "share": 12.5,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:28:00",
+      "method": "card",
+      "payments": 12,
+      "failed": 1,
+      "share": 8.3,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:28:00",
+      "method": "google_pay",
+      "payments": 3,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:29:00",
+      "method": "apple_pay",
+      "payments": 6,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": true
+    },
+    {
+      "window": "17:29:00",
+      "method": "card",
+      "payments": 12,
+      "failed": 2,
+      "share": 16.7,
+      "alert": true,
+      "final_flush": true
+    },
+    {
+      "window": "17:29:00",
+      "method": "google_pay",
+      "payments": 2,
+      "failed": 0,
+      "share": 0.0,
+      "alert": false,
+      "final_flush": true
+    }
+  ]
+}

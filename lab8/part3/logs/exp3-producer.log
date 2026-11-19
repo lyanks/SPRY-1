@@ -1,0 +1,9 @@
+3593 events, receivedAt 17:00..17:30, 20/s, about 180 s, fail-pct 30
+  sent 500/3593
+  sent 1000/3593
+  sent 1500/3593
+  sent 2000/3593
+  sent 2500/3593
+  sent 3000/3593
+  sent 3500/3593
+done: produced 3593 events in 180 s, 0 delivery errors

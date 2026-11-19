@@ -1,0 +1,7 @@
+{
+  "query": "q3_turnover-parquet",
+  "data_scanned_bytes": 6387622,
+  "data_scanned_mb": 6.09,
+  "engine_ms": 1015,
+  "total_ms": 1220
+}

@@ -1,0 +1,7 @@
+{
+  "query": "s2_count",
+  "data_scanned_bytes": 1505265,
+  "data_scanned_mb": 1.44,
+  "engine_ms": 503,
+  "total_ms": 665
+}

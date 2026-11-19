@@ -1,0 +1,10 @@
+flowchart LR
+  A["producer_kinesis.py<br/>replay of payment events<br/>20 events/s, key = invoiceId"] --> B["Kinesis Data Stream<br/>lab8-payments<br/>1 shard"]
+  B --> C["Firehose<br/>lab8-payments-to-s3<br/>batch 60 s or 1 MB"]
+  B --> E["alerter.py<br/>1-min event-time windows<br/>failure share per method"]
+  C --> D[("S3<br/>stream/dt=.../<br/>JSON Lines")]
+  D --> F["Athena<br/>lab8.stream_events"]
+  E -->|"share above 10%"| G["SNS topic<br/>lab8-payment-alerts"]
+  G --> H["e-mail"]
+  classDef aws fill:#fff3e0,stroke:#e65100,color:#000;
+  class B,C,D,F,G aws;
