@@ -1,0 +1,5 @@
+paymentMethod,payments,failed,failure_pct
+google_pay,209,69,33.0
+card,667,218,32.7
+qr,25,8,32.0
+apple_pay,288,89,30.9

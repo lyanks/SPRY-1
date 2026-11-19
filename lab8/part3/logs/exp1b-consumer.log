@@ -1,0 +1,87 @@
+consumer group=g-exp1-1794074282 lateness=120s threshold=10%
+assigned partitions [0, 1, 2]
+window 17:07:00  apple_pay  payments=6    failed=0   share=  0.0%
+window 17:07:00  card       payments=8    failed=0   share=  0.0%
+window 17:07:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:08:00  apple_pay  payments=2    failed=0   share=  0.0%
+window 17:08:00  card       payments=14   failed=1   share=  7.1%
+window 17:08:00  google_pay payments=1    failed=0   share=  0.0%
+window 17:09:00  apple_pay  payments=2    failed=0   share=  0.0%
+window 17:09:00  card       payments=6    failed=0   share=  0.0%
+window 17:09:00  google_pay payments=3    failed=0   share=  0.0%
+window 17:10:00  apple_pay  payments=2    failed=1   share= 50.0%
+window 17:10:00  card       payments=11   failed=1   share=  9.1%
+window 17:10:00  google_pay payments=3    failed=0   share=  0.0%
+window 17:11:00  apple_pay  payments=3    failed=0   share=  0.0%
+window 17:11:00  card       payments=7    failed=0   share=  0.0%
+window 17:11:00  google_pay payments=2    failed=0   share=  0.0%
+window 17:11:00  qr         payments=1    failed=0   share=  0.0%
+window 17:12:00  apple_pay  payments=2    failed=0   share=  0.0%
+window 17:12:00  card       payments=4    failed=0   share=  0.0%
+window 17:12:00  google_pay payments=2    failed=0   share=  0.0%
+window 17:13:00  apple_pay  payments=2    failed=0   share=  0.0%
+window 17:13:00  card       payments=7    failed=1   share= 14.3%
+window 17:13:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:13:00  qr         payments=1    failed=0   share=  0.0%
+window 17:14:00  apple_pay  payments=9    failed=0   share=  0.0%
+window 17:14:00  card       payments=26   failed=5   share= 19.2%   ALERT: failure share above 10%
+window 17:14:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:14:00  qr         payments=1    failed=0   share=  0.0%
+window 17:15:00  apple_pay  payments=8    failed=1   share= 12.5%
+window 17:15:00  card       payments=19   failed=1   share=  5.3%
+window 17:15:00  google_pay payments=12   failed=1   share=  8.3%
+window 17:16:00  apple_pay  payments=7    failed=1   share= 14.3%
+window 17:16:00  card       payments=27   failed=3   share= 11.1%   ALERT: failure share above 10%
+window 17:16:00  google_pay payments=11   failed=2   share= 18.2%   ALERT: failure share above 10%
+window 17:16:00  qr         payments=1    failed=0   share=  0.0%
+window 17:17:00  apple_pay  payments=10   failed=0   share=  0.0%
+window 17:17:00  card       payments=18   failed=2   share= 11.1%   ALERT: failure share above 10%
+window 17:17:00  google_pay payments=8    failed=0   share=  0.0%
+window 17:18:00  apple_pay  payments=12   failed=1   share=  8.3%
+window 17:18:00  card       payments=20   failed=2   share= 10.0%
+window 17:18:00  google_pay payments=6    failed=1   share= 16.7%
+window 17:18:00  qr         payments=1    failed=0   share=  0.0%
+window 17:19:00  apple_pay  payments=9    failed=0   share=  0.0%
+window 17:19:00  card       payments=23   failed=0   share=  0.0%
+window 17:19:00  google_pay payments=12   failed=2   share= 16.7%   ALERT: failure share above 10%
+window 17:19:00  qr         payments=1    failed=1   share=100.0%
+window 17:20:00  apple_pay  payments=10   failed=0   share=  0.0%
+window 17:20:00  card       payments=23   failed=1   share=  4.3%
+window 17:20:00  google_pay payments=7    failed=1   share= 14.3%
+window 17:20:00  qr         payments=1    failed=0   share=  0.0%
+window 17:21:00  apple_pay  payments=6    failed=0   share=  0.0%
+window 17:21:00  card       payments=17   failed=1   share=  5.9%
+window 17:21:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:21:00  qr         payments=1    failed=0   share=  0.0%
+window 17:22:00  apple_pay  payments=14   failed=0   share=  0.0%
+window 17:22:00  card       payments=19   failed=0   share=  0.0%
+window 17:22:00  google_pay payments=5    failed=0   share=  0.0%
+window 17:22:00  qr         payments=1    failed=0   share=  0.0%
+window 17:23:00  apple_pay  payments=13   failed=2   share= 15.4%   ALERT: failure share above 10%
+window 17:23:00  card       payments=27   failed=5   share= 18.5%   ALERT: failure share above 10%
+window 17:23:00  google_pay payments=10   failed=1   share= 10.0%
+window 17:24:00  apple_pay  payments=11   failed=0   share=  0.0%
+window 17:24:00  card       payments=24   failed=2   share=  8.3%
+window 17:24:00  google_pay payments=5    failed=0   share=  0.0%
+window 17:24:00  qr         payments=1    failed=0   share=  0.0%
+window 17:25:00  apple_pay  payments=8    failed=1   share= 12.5%
+window 17:25:00  card       payments=23   failed=3   share= 13.0%   ALERT: failure share above 10%
+window 17:25:00  google_pay payments=6    failed=0   share=  0.0%
+window 17:25:00  qr         payments=1    failed=0   share=  0.0%
+window 17:26:00  apple_pay  payments=5    failed=0   share=  0.0%
+window 17:26:00  card       payments=20   failed=1   share=  5.0%
+window 17:26:00  google_pay payments=6    failed=0   share=  0.0%
+window 17:26:00  qr         payments=1    failed=0   share=  0.0%
+no messages for 20 s, stopping
+revoked partitions [0, 1, 2]
+window 17:27:00  apple_pay  payments=7    failed=0   share=  0.0%   (final flush)
+window 17:27:00  card       payments=16   failed=1   share=  6.2%   (final flush)
+window 17:27:00  google_pay payments=8    failed=0   share=  0.0%   (final flush)
+window 17:27:00  qr         payments=2    failed=0   share=  0.0%   (final flush)
+window 17:28:00  apple_pay  payments=10   failed=1   share= 10.0%   (final flush)
+window 17:28:00  card       payments=21   failed=2   share=  9.5%   (final flush)
+window 17:28:00  google_pay payments=3    failed=0   share=  0.0%   (final flush)
+window 17:29:00  apple_pay  payments=10   failed=0   share=  0.0%   (final flush)
+window 17:29:00  card       payments=23   failed=3   share= 13.0%   ALERT: failure share above 10%   (final flush)
+window 17:29:00  google_pay payments=4    failed=0   share=  0.0%   (final flush)
+summary: {"consumed": 2802, "duplicates": 28, "late": 620, "late_terminal": 210, "terminal_counted": 715, "alerts": 9, "seen_set_size": 2774, "windows_closed": 82, "lateness": 120, "group": "g-exp1-1794074282"}

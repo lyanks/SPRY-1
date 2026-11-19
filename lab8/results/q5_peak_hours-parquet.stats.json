@@ -1,0 +1,7 @@
+{
+  "query": "q5_peak_hours-parquet",
+  "data_scanned_bytes": 6547120,
+  "data_scanned_mb": 6.24,
+  "engine_ms": 762,
+  "total_ms": 905
+}

@@ -1,0 +1,12 @@
+{
+  "produced": 3593,
+  "seconds": 179.6,
+  "rate": 20.0,
+  "fail_pct": 0,
+  "injected_failures": 0,
+  "delivery_errors": 0,
+  "slice": [
+    "17:00",
+    "17:30"
+  ]
+}

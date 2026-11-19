@@ -1,0 +1,33 @@
+consumer group=g-exp1-1794074282 lateness=120s threshold=10%
+assigned partitions [0, 1, 2]
+window 16:59:00  card       payments=2    failed=0   share=  0.0%
+window 16:59:00  google_pay payments=1    failed=0   share=  0.0%
+window 17:00:00  apple_pay  payments=13   failed=0   share=  0.0%
+window 17:00:00  card       payments=21   failed=3   share= 14.3%   ALERT: failure share above 10%
+window 17:00:00  google_pay payments=6    failed=0   share=  0.0%
+window 17:00:00  qr         payments=3    failed=0   share=  0.0%
+window 17:01:00  apple_pay  payments=9    failed=0   share=  0.0%
+window 17:01:00  card       payments=22   failed=2   share=  9.1%
+window 17:01:00  google_pay payments=7    failed=1   share= 14.3%
+window 17:01:00  qr         payments=1    failed=0   share=  0.0%
+window 17:02:00  apple_pay  payments=4    failed=0   share=  0.0%
+window 17:02:00  card       payments=19   failed=0   share=  0.0%
+window 17:02:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:02:00  qr         payments=2    failed=0   share=  0.0%
+window 17:03:00  apple_pay  payments=8    failed=0   share=  0.0%
+window 17:03:00  card       payments=19   failed=2   share= 10.5%   ALERT: failure share above 10%
+window 17:03:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:03:00  qr         payments=1    failed=0   share=  0.0%
+window 17:04:00  apple_pay  payments=11   failed=0   share=  0.0%
+window 17:04:00  card       payments=22   failed=1   share=  4.5%
+window 17:04:00  google_pay payments=8    failed=1   share= 12.5%
+revoked partitions [0, 1, 2]
+window 17:05:00  apple_pay  payments=10   failed=2   share= 20.0%   ALERT: failure share above 10%   (final flush)
+window 17:05:00  card       payments=21   failed=0   share=  0.0%   (final flush)
+window 17:05:00  google_pay payments=6    failed=2   share= 33.3%   (final flush)
+window 17:05:00  qr         payments=1    failed=0   share=  0.0%   (final flush)
+window 17:06:00  apple_pay  payments=9    failed=1   share= 11.1%   (final flush)
+window 17:06:00  card       payments=16   failed=2   share= 12.5%   ALERT: failure share above 10%   (final flush)
+window 17:06:00  google_pay payments=6    failed=1   share= 16.7%   (final flush)
+window 17:07:00  card       payments=2    failed=0   share=  0.0%   (final flush)
+summary: {"consumed": 791, "duplicates": 11, "late": 15, "late_terminal": 6, "terminal_counted": 258, "alerts": 4, "seen_set_size": 780, "windows_closed": 29, "lateness": 120, "group": "g-exp1-1794074282"}

@@ -1,0 +1,116 @@
+consumer group=g-exp3-1794074966 lateness=120s threshold=10%
+assigned partitions [0, 1, 2]
+window 16:59:00  card       payments=2    failed=0   share=  0.0%
+window 16:59:00  google_pay payments=1    failed=0   share=  0.0%
+window 17:00:00  apple_pay  payments=13   failed=2   share= 15.4%   ALERT: failure share above 10%
+window 17:00:00  card       payments=21   failed=12  share= 57.1%   ALERT: failure share above 10%
+window 17:00:00  google_pay payments=6    failed=1   share= 16.7%
+window 17:00:00  qr         payments=3    failed=0   share=  0.0%
+window 17:01:00  apple_pay  payments=9    failed=0   share=  0.0%
+window 17:01:00  card       payments=22   failed=9   share= 40.9%   ALERT: failure share above 10%
+window 17:01:00  google_pay payments=7    failed=5   share= 71.4%
+window 17:01:00  qr         payments=1    failed=0   share=  0.0%
+window 17:02:00  apple_pay  payments=4    failed=0   share=  0.0%
+window 17:02:00  card       payments=19   failed=6   share= 31.6%   ALERT: failure share above 10%
+window 17:02:00  google_pay payments=4    failed=1   share= 25.0%
+window 17:02:00  qr         payments=2    failed=1   share= 50.0%
+window 17:03:00  apple_pay  payments=8    failed=1   share= 12.5%
+window 17:03:00  card       payments=19   failed=5   share= 26.3%   ALERT: failure share above 10%
+window 17:03:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:03:00  qr         payments=1    failed=0   share=  0.0%
+window 17:04:00  apple_pay  payments=11   failed=4   share= 36.4%   ALERT: failure share above 10%
+window 17:04:00  card       payments=22   failed=7   share= 31.8%   ALERT: failure share above 10%
+window 17:04:00  google_pay payments=8    failed=2   share= 25.0%
+window 17:05:00  apple_pay  payments=10   failed=4   share= 40.0%   ALERT: failure share above 10%
+window 17:05:00  card       payments=21   failed=5   share= 23.8%   ALERT: failure share above 10%
+window 17:05:00  google_pay payments=6    failed=2   share= 33.3%
+window 17:05:00  qr         payments=1    failed=0   share=  0.0%
+window 17:06:00  apple_pay  payments=9    failed=4   share= 44.4%
+window 17:06:00  card       payments=16   failed=4   share= 25.0%   ALERT: failure share above 10%
+window 17:06:00  google_pay payments=6    failed=4   share= 66.7%
+window 17:07:00  apple_pay  payments=12   failed=2   share= 16.7%   ALERT: failure share above 10%
+window 17:07:00  card       payments=21   failed=6   share= 28.6%   ALERT: failure share above 10%
+window 17:07:00  google_pay payments=6    failed=1   share= 16.7%
+window 17:08:00  apple_pay  payments=10   failed=3   share= 30.0%   ALERT: failure share above 10%
+window 17:08:00  card       payments=33   failed=6   share= 18.2%   ALERT: failure share above 10%
+window 17:08:00  google_pay payments=7    failed=1   share= 14.3%
+window 17:09:00  apple_pay  payments=12   failed=3   share= 25.0%   ALERT: failure share above 10%
+window 17:09:00  card       payments=19   failed=6   share= 31.6%   ALERT: failure share above 10%
+window 17:09:00  google_pay payments=8    failed=3   share= 37.5%
+window 17:10:00  apple_pay  payments=5    failed=3   share= 60.0%
+window 17:10:00  card       payments=26   failed=8   share= 30.8%   ALERT: failure share above 10%
+window 17:10:00  google_pay payments=9    failed=2   share= 22.2%
+window 17:10:00  qr         payments=2    failed=1   share= 50.0%
+window 17:11:00  apple_pay  payments=12   failed=5   share= 41.7%   ALERT: failure share above 10%
+window 17:11:00  card       payments=27   failed=7   share= 25.9%   ALERT: failure share above 10%
+window 17:11:00  google_pay payments=4    failed=1   share= 25.0%
+window 17:11:00  qr         payments=1    failed=0   share=  0.0%
+window 17:12:00  apple_pay  payments=12   failed=5   share= 41.7%   ALERT: failure share above 10%
+window 17:12:00  card       payments=16   failed=4   share= 25.0%   ALERT: failure share above 10%
+window 17:12:00  google_pay payments=7    failed=2   share= 28.6%
+window 17:13:00  apple_pay  payments=7    failed=3   share= 42.9%
+window 17:13:00  card       payments=23   failed=6   share= 26.1%   ALERT: failure share above 10%
+window 17:13:00  google_pay payments=12   failed=4   share= 33.3%   ALERT: failure share above 10%
+window 17:13:00  qr         payments=1    failed=1   share=100.0%
+window 17:14:00  apple_pay  payments=9    failed=1   share= 11.1%
+window 17:14:00  card       payments=26   failed=13  share= 50.0%   ALERT: failure share above 10%
+window 17:14:00  google_pay payments=4    failed=3   share= 75.0%
+window 17:14:00  qr         payments=1    failed=0   share=  0.0%
+window 17:15:00  apple_pay  payments=8    failed=1   share= 12.5%
+window 17:15:00  card       payments=19   failed=5   share= 26.3%   ALERT: failure share above 10%
+window 17:15:00  google_pay payments=12   failed=6   share= 50.0%   ALERT: failure share above 10%
+window 17:16:00  apple_pay  payments=7    failed=1   share= 14.3%
+window 17:16:00  card       payments=27   failed=11  share= 40.7%   ALERT: failure share above 10%
+window 17:16:00  google_pay payments=11   failed=3   share= 27.3%   ALERT: failure share above 10%
+window 17:16:00  qr         payments=1    failed=0   share=  0.0%
+window 17:17:00  apple_pay  payments=10   failed=3   share= 30.0%   ALERT: failure share above 10%
+window 17:17:00  card       payments=18   failed=5   share= 27.8%   ALERT: failure share above 10%
+window 17:17:00  google_pay payments=8    failed=3   share= 37.5%
+window 17:18:00  apple_pay  payments=12   failed=8   share= 66.7%   ALERT: failure share above 10%
+window 17:18:00  card       payments=20   failed=6   share= 30.0%   ALERT: failure share above 10%
+window 17:18:00  google_pay payments=6    failed=2   share= 33.3%
+window 17:18:00  qr         payments=1    failed=1   share=100.0%
+window 17:19:00  apple_pay  payments=9    failed=3   share= 33.3%
+window 17:19:00  card       payments=23   failed=7   share= 30.4%   ALERT: failure share above 10%
+window 17:19:00  google_pay payments=12   failed=5   share= 41.7%   ALERT: failure share above 10%
+window 17:19:00  qr         payments=1    failed=1   share=100.0%
+window 17:20:00  apple_pay  payments=10   failed=3   share= 30.0%   ALERT: failure share above 10%
+window 17:20:00  card       payments=23   failed=6   share= 26.1%   ALERT: failure share above 10%
+window 17:20:00  google_pay payments=7    failed=4   share= 57.1%
+window 17:20:00  qr         payments=1    failed=0   share=  0.0%
+window 17:21:00  apple_pay  payments=6    failed=0   share=  0.0%
+window 17:21:00  card       payments=17   failed=4   share= 23.5%   ALERT: failure share above 10%
+window 17:21:00  google_pay payments=4    failed=0   share=  0.0%
+window 17:21:00  qr         payments=1    failed=0   share=  0.0%
+window 17:22:00  apple_pay  payments=14   failed=3   share= 21.4%   ALERT: failure share above 10%
+window 17:22:00  card       payments=19   failed=10  share= 52.6%   ALERT: failure share above 10%
+window 17:22:00  google_pay payments=5    failed=2   share= 40.0%
+window 17:22:00  qr         payments=1    failed=1   share=100.0%
+window 17:23:00  apple_pay  payments=13   failed=7   share= 53.8%   ALERT: failure share above 10%
+window 17:23:00  card       payments=27   failed=9   share= 33.3%   ALERT: failure share above 10%
+window 17:23:00  google_pay payments=10   failed=4   share= 40.0%   ALERT: failure share above 10%
+window 17:24:00  apple_pay  payments=11   failed=2   share= 18.2%   ALERT: failure share above 10%
+window 17:24:00  card       payments=24   failed=10  share= 41.7%   ALERT: failure share above 10%
+window 17:24:00  google_pay payments=5    failed=3   share= 60.0%
+window 17:24:00  qr         payments=1    failed=0   share=  0.0%
+window 17:25:00  apple_pay  payments=8    failed=4   share= 50.0%
+window 17:25:00  card       payments=23   failed=8   share= 34.8%   ALERT: failure share above 10%
+window 17:25:00  google_pay payments=6    failed=1   share= 16.7%
+window 17:25:00  qr         payments=1    failed=1   share=100.0%
+window 17:26:00  apple_pay  payments=5    failed=2   share= 40.0%
+window 17:26:00  card       payments=20   failed=8   share= 40.0%   ALERT: failure share above 10%
+window 17:26:00  google_pay payments=6    failed=0   share=  0.0%
+window 17:26:00  qr         payments=1    failed=0   share=  0.0%
+no messages for 20 s, stopping
+revoked partitions [0, 1, 2]
+window 17:27:00  apple_pay  payments=7    failed=4   share= 57.1%   (final flush)
+window 17:27:00  card       payments=16   failed=7   share= 43.8%   ALERT: failure share above 10%   (final flush)
+window 17:27:00  google_pay payments=8    failed=2   share= 25.0%   (final flush)
+window 17:27:00  qr         payments=2    failed=0   share=  0.0%   (final flush)
+window 17:28:00  apple_pay  payments=10   failed=3   share= 30.0%   ALERT: failure share above 10%   (final flush)
+window 17:28:00  card       payments=21   failed=7   share= 33.3%   ALERT: failure share above 10%   (final flush)
+window 17:28:00  google_pay payments=3    failed=0   share=  0.0%   (final flush)
+window 17:29:00  apple_pay  payments=10   failed=3   share= 30.0%   ALERT: failure share above 10%   (final flush)
+window 17:29:00  card       payments=23   failed=5   share= 21.7%   ALERT: failure share above 10%   (final flush)
+window 17:29:00  google_pay payments=4    failed=2   share= 50.0%   (final flush)
+summary: {"consumed": 3593, "duplicates": 39, "late": 54, "late_terminal": 23, "terminal_counted": 1166, "alerts": 51, "seen_set_size": 3554, "windows_closed": 111, "lateness": 120, "group": "g-exp3-1794074966"}

@@ -1,0 +1,7 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+# written by scripts/gcp.sh: the image tag of the last deploy and the repository IDs
+image.auto.tfvars
+ids.auto.tfvars

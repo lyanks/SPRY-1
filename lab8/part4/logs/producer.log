@@ -1,0 +1,11 @@
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.prefix, expected /home/ulyanka/PycharmProjects/SPRY/lab8/part3/.venv, got /home/ulyanka/PycharmProjects/SPRY/lab8/part4/../part3/.venv
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.exec_prefix, expected /home/ulyanka/PycharmProjects/SPRY/lab8/part3/.venv, got /home/ulyanka/PycharmProjects/SPRY/lab8/part4/../part3/.venv
+3593 events, 20/s, about 180 s
+  sent 500/3593
+  sent 1000/3593
+  sent 1500/3593
+  sent 2000/3593
+  sent 2500/3593
+  sent 3000/3593
+  sent 3500/3593
+done: 3593 records accepted by Kinesis, 0 failed
